@@ -1,0 +1,145 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+body {
+    background: #f5f5f5;
+    color: #333;
+}
+
+/* Barra superior */
+header {
+    background: #111;
+    color: #fff;
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+header .logo {
+    display: flex;
+    align-items: center;
+    font-weight: bold;
+    color: #f7b733;
+    font-size: 20px;
+}
+
+header .search-bar {
+    flex: 1;
+    margin: 0 20px;
+}
+
+header .search-bar input {
+    width: 100%;
+    padding: 8px;
+    border: none;
+    border-radius: 5px;
+}
+
+header .account {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+header .account a {
+    color: white;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+header .cart {
+    position: relative;
+    font-size: 18px;
+}
+
+/* Menú secundario */
+nav {
+    background: #fff;
+    display: flex;
+    justify-content: flex-start;
+    padding: 10px 20px;
+    border-bottom: 1px solid #ddd;
+    gap: 20px;
+}
+
+nav a {
+    text-decoration: none;
+    color: #333;
+    font-weight: 500;
+}
+
+nav a.ofertas {
+    color: red;
+}
+
+/* Banner */
+.banner {
+display: flex;
+gap: 10px;          /* menos espacio entre bloques */
+max-width: 1000px;  /* ancho máximo del contenedor */
+margin: auto;
+}
+
+.banner .left {
+flex: 2;
+}
+
+.banner .left img {
+width: 100%;
+height: auto;       /* mantiene proporción */
+border-radius: 12px;
+display: block;
+}
+
+.banner .right {
+flex: 1;
+display: flex;
+flex-direction: column;
+gap: 10px;
+}
+
+.banner .right img {
+width: 100%;
+height: auto;        /* no estira demasiado */
+border-radius: 12px;
+display: block;
+}
+
+
+/* Categorías circulares */
+.categories {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 20px;
+    padding: 20px;
+    background: white;
+    border-radius: 15px;
+    margin: 20px;
+}
+
+.categories .item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.categories .item img {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #ddd;
+    margin-bottom: 10px;
+}
+
+.categories .item span {
+    font-size: 14px;
+    font-weight: 500;
+}
