@@ -16,7 +16,8 @@
       <input type="text" placeholder="Encuentra lo que busques...">
     </div>
     <div class="account">
-      <a href="#" id="loginBtn">Ingresar / Registrar</a>
+      <a href="#">Ingresar / Registrar</a>
+      <a href="#">Mi cuenta ▼</a>
       <div class="cart">🛒</div>
     </div>
   </header>
@@ -72,29 +73,6 @@
       <span>Tarjeteros</span>
     </div>
   </section>
-
-   <!-- MODAL DE LOGIN / REGISTRO -->
-  <div class="modal" id="loginModal">
-    <div class="modal-content">
-      <span class="close" id="closeModal">&times;</span>
-      <h2>Iniciar sesión</h2>
-      <input type="text" placeholder="Usuario">
-      <input type="password" placeholder="Contraseña">
-      <button>Entrar</button>
-      <p>¿No tienes cuenta? <a href="#">Regístrate aquí</a></p>
-    </div>
-  </div>
-
-  <script>
-    // --- SCRIPT DE MODAL ---
-    const modal = document.getElementById("loginModal");
-    const loginBtn = document.getElementById("loginBtn");
-    const closeModal = document.getElementById("closeModal");
-
-    loginBtn.onclick = () => modal.style.display = "flex";
-    closeModal.onclick = () => modal.style.display = "none";
-    window.onclick = (e) => { if (e.target == modal) modal.style.display = "none"; }
-  </script>
 
 </body>
 </html>

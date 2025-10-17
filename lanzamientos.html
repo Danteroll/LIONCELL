@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Lion Cell – Lanzamientos</title>
+  <link rel="stylesheet" href="estilos.css"/>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header>
+    <div class="logo"><img src="imagenes/LogoLionCell.png" witdh="75px" height="75px"> LION CELL</div>
+    <div class="search-bar">
+      <input type="text" placeholder="Encuentra lo que busques...">
+    </div>
+    <div class="account">
+      <a href="#">Ingresar / Registrar</a>
+      <a href="#">Mi cuenta ▼</a>
+      <div class="cart">🛒</div>
+    </div>
+  </header>
+
+  <!-- NAV -->
+  <nav>
+    <a href="index.html">🏠</a>
+    <a href="lanzamientos.html">Lanzamientos</a>
+    <a href="categorias.html">Categorías</a>
+    <a href="marcas.html">Marcas</a>
+    <a href="ofertas.html" class="ofertas">Ofertas</a>
+  </nav>
+
+  <!-- Breadcrumb -->
+  <div class="lc-breadcrumbs">
+    <a href="index.html">Inicio</a> <span>›</span> <span class="current">Lanzamientos</span>
+  </div>
+
+  <main class="lc-page">
+    <!-- Sidebar -->
+    <aside class="lc-filters">
+      <h3>Filtros</h3>
+
+      <details open class="f-group">
+        <summary>Precio</summary>
+        <div class="f-range">
+          <input type="range" min="0" max="27999" value="0" id="rmin">
+          <input type="range" min="0" max="27999" value="27999" id="rmax">
+          <div class="f-nums">
+            <div>
+              <label>$</label>
+              <input type="number" id="nmin" min="0" max="27999" value="0">
+            </div>
+            <span class="dash">—</span>
+            <div>
+              <label>$</label>
+              <input type="number" id="nmax" min="0" max="27999" value="27999">
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <details class="f-group">
+        <summary>Marca</summary>
+        <div class="f-list">
+          <label><input type="checkbox"> STF</label>
+          <label><input type="checkbox"> OnePlus</label>
+          <label><input type="checkbox"> Sony</label>
+        </div>
+      </details>
+
+      <details class="f-group">
+        <summary>Tipo de producto</summary>
+        <div class="f-list">
+          <label><input type="checkbox"> Audífonos</label>
+          <label><input type="checkbox"> TWS</label>
+          <label><input type="checkbox"> Over-ear</label>
+        </div>
+      </details>
+    </aside>
+
+    <!-- Contenido -->
+    <section class="lc-content">
+      <h1 class="lc-title">Lanzamientos</h1>
+
+      <div class="lc-grid">
+        <!-- Card 1 -->
+        <article class="lc-card">
+          <img src="imagenes/prod1.png" alt="Audífonos Negros">
+          <div class="card-body">
+            <div class="price">$ 599.00</div>
+            <h2 class="name">Audífonos inalámbricos On ear | STF One Plus ANC | 44 hrs uso función dual Negro</h2>
+            <button class="btn btn-primary">Agregar al carrito</button>
+          </div>
+        </article>
+
+        <!-- Card 2 -->
+        <article class="lc-card">
+          <img src="imagenes/prod2.png" alt="Audífonos Rosa">
+          <div class="card-body">
+            <div class="price">$ 599.00</div>
+            <h2 class="name">Audífonos inalámbricos On ear | STF One Plus ANC | 44 hrs uso función dual Rosa</h2>
+            <button class="btn btn-alt">Agregar al carrito</button>
+          </div>
+        </article>
+
+        <!-- Card 3 -->
+        <article class="lc-card">
+          <img src="imagenes/prod3.png" alt="Audífonos Negros ANC">
+          <div class="card-body">
+            <div class="price">$ 899.00</div>
+            <h2 class="name">Audífonos inalámbricos On ear | STF One Pro ANC | 40 hrs uso Audio espacial</h2>
+            <button class="btn btn-primary">Agregar al carrito</button>
+          </div>
+        </article>
+
+        <!-- Card 4 -->
+        <article class="lc-card">
+          <img src="imagenes/prod4.png" alt="TWS Negros">
+          <div class="card-body">
+            <div class="price">$ 899.00</div>
+            <h2 class="name">Audífonos inalámbricos TWS | STF One Pro ANC | 7 hrs IPX4 Audio espacial Negro</h2>
+            <button class="btn btn-alt">Agregar al carrito</button>
+          </div>
+        </article>
+
+        <!-- Duplica más tarjetas si necesitas -->
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer (opcional) -->
+
+  <!-- JS: sincroniza sliders y números -->
+  <script>
+    const rmin = document.getElementById('rmin');
+    const rmax = document.getElementById('rmax');
+    const nmin = document.getElementById('nmin');
+    const nmax = document.getElementById('nmax');
+
+    function clamp() {
+      if (+rmin.value > +rmax.value) rmin.value = rmax.value;
+      if (+nmin.value > +nmax.value) nmin.value = nmax.value;
+    }
+    function syncFromRange(){
+      nmin.value = rmin.value;
+      nmax.value = rmax.value;
+      clamp();
+    }
+    function syncFromNumber(){
+      rmin.value = nmin.value;
+      rmax.value = nmax.value;
+      clamp();
+    }
+    [rmin, rmax].forEach(i => i.addEventListener('input', syncFromRange));
+    [nmin, nmax].forEach(i => i.addEventListener('input', syncFromNumber));
+  </script>
+</body>
+</html>
