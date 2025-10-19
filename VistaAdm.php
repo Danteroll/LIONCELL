@@ -530,7 +530,7 @@ if (empty($_SESSION['usuario']) || ($_SESSION['role_id'] ?? 0) != 1) {
     }
 
     // =========================
-    // === INVENTARIO (tu código) ===
+    // === INVENTARIO  ===
     // =========================
     function mostrarInventarioCategoria(cat) {
       const cont = document.getElementById("contenido-inventario");
