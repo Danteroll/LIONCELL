@@ -1,3 +1,11 @@
+<?php
+// esto session_star es para entrar a páginas de admin
+session_start();
+if (empty($_SESSION['usuario']) || ($_SESSION['role_id'] ?? 0) != 1) {
+    header("Location: ../formulario.php");
+    exit;
+}
+?>
 <!DOCTYPE html> 
 <html lang="es">
 <head>
@@ -372,7 +380,7 @@
     }
 
     // =========================
-    // === PRODUCTOS (tu código original, sin cambios funcionales) ===
+    // === PRODUCTOS ===
     // =========================
     function mostrarCategoria(cat) {
       const cont = document.getElementById("contenido-productos");

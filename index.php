@@ -1,3 +1,13 @@
+<?php
+//session_star para usuarios
+require_once __DIR__ . '/inc/init.php';
+
+if (isset($_GET['logout'])) {
+    session_destroy();
+    header("Location: formulario.php");
+    exit;
+}
+?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -16,18 +26,25 @@
       <input type="text" placeholder="Encuentra lo que busques...">
     </div>
     <div class="account">
-      <a href="#" id="loginBtn">Ingresar / Registrar</a>
       <div class="cart">🛒</div>
+      <?php if (!isset($_SESSION['usuario'])): ?>
+          <a href="formulario.php" id="loginBtn">Ingresar / Registrar</a>
+      <?php endif; ?>
+      <?php if (isset($_SESSION['usuario'])): ?>
+          <a href="perfil/home.php"><i class="fa-solid fa-user">👤</i></a>
+      <?php else: ?>
+          <a href="formulario.php"><i class="fa-solid fa-right-to-bracket"></i></a>
+      <?php endif; ?>
     </div>
   </header>
 
   <!-- NAV -->
   <nav>
-    <a href="index.html">🏠</a>
-    <a href="lanzamientos.html">Lanzamientos</a>
-    <a href="categorias.html">Categorías</a>
-    <a href="marcas.html">Marcas</a>
-    <a href="ofertas.html" class="ofertas">Ofertas</a>
+    <a href="index.php">🏠</a>
+    <a href="lanzamientos.php">Lanzamientos</a>
+    <a href="categorias.php">Categorías</a>
+    <a href="marcas.php">Marcas</a>
+    <a href="ofertas.php" class="ofertas">Ofertas</a>
   </nav>
 
   <!-- BANNERS -->
@@ -72,29 +89,6 @@
       <span>Tarjeteros</span>
     </div>
   </section>
-
-   <!-- MODAL DE LOGIN / REGISTRO -->
-  <div class="modal" id="loginModal">
-    <div class="modal-content">
-      <span class="close" id="closeModal">&times;</span>
-      <h2>Iniciar sesión</h2>
-      <input type="text" placeholder="Usuario">
-      <input type="password" placeholder="Contraseña">
-      <button>Entrar</button>
-      <p>¿No tienes cuenta? <a href="#">Regístrate aquí</a></p>
-    </div>
-  </div>
-
-  <script>
-    // --- SCRIPT DE MODAL ---
-    const modal = document.getElementById("loginModal");
-    const loginBtn = document.getElementById("loginBtn");
-    const closeModal = document.getElementById("closeModal");
-
-    loginBtn.onclick = () => modal.style.display = "flex";
-    closeModal.onclick = () => modal.style.display = "none";
-    window.onclick = (e) => { if (e.target == modal) modal.style.display = "none"; }
-  </script>
 
 </body>
 </html>

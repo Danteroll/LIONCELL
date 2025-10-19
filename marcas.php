@@ -1,3 +1,14 @@
+<?php
+//session_star para usuarios
+require_once __DIR__ . '/inc/init.php';
+
+if (isset($_GET['logout'])) {
+    session_destroy();
+    header("Location: formulario.php");
+    exit;
+}
+?>
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -16,19 +27,25 @@
       <input type="text" placeholder="Encuentra lo que busques...">
     </div>
     <div class="account">
-      <a href="#">Ingresar / Registrar</a>
-      <a href="#">Mi cuenta ▼</a>
       <div class="cart">🛒</div>
+      <?php if (!isset($_SESSION['usuario'])): ?>
+          <a href="formulario.php" id="loginBtn">Ingresar / Registrar</a>
+      <?php endif; ?>
+      <?php if (isset($_SESSION['usuario'])): ?>
+          <a href="perfil/home.php"><i class="fa-solid fa-user">👤</i></a>
+      <?php else: ?>
+          <a href="formulario.php"><i class="fa-solid fa-right-to-bracket"></i></a>
+      <?php endif; ?>
     </div>
   </header>
 
   <!-- NAV -->
   <nav>
-    <a href="index.html">🏠</a>
-    <a href="lanzamientos.html">Lanzamientos</a>
-    <a href="categorias.html">Categorías</a>
-    <a href="marcas.html">Marcas</a>
-    <a href="ofertas.html" class="ofertas">Ofertas</a>
+    <a href="index.php">🏠</a>
+    <a href="lanzamientos.php">Lanzamientos</a>
+    <a href="categorias.php">Categorías</a>
+    <a href="marcas.php">Marcas</a>
+    <a href="ofertas.php" class="ofertas">Ofertas</a>
   </nav>
 
   <!-- BANNERS -->
