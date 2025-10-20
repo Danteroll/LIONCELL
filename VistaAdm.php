@@ -19,7 +19,7 @@ if (empty($_SESSION['usuario']) || ($_SESSION['role_id'] ?? 0) != 1) {
     /* === SIDEBAR === */
     .sidebar {
       width: 250px;
-      background: linear-gradient(180deg, #0066ff, #00ccff);
+      background: linear-gradient(180deg, #1e3a8a 0%, #2563eb 45%, #e6c065 100%);
       color: white;
       display: flex;
       flex-direction: column;
