@@ -41,14 +41,8 @@
             if(mysqli_num_rows($select) > 0){
                $fetch = mysqli_fetch_assoc($select);
             }
-            if($fetch['image'] == ''){
-               echo '<img src="images/default-avatar.png">';
-            }else{
-               echo '<img src="uploaded_img/'.$fetch['image'].'">';
-            }
          ?>
          <h3><?php echo $fetch['usuario']; ?></h3>
-         <a href="update_profile-user.php" class="btn">Actualizar Usuario</a>
          <a href="../php/cerrar_sesion.php" class="delete-btn">Cerrar sesion</a>
          <p><a href="../index.php">Regresar</a></p>
       </div>
