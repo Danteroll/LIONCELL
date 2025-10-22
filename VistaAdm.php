@@ -19,7 +19,7 @@ if (empty($_SESSION['usuario']) || ($_SESSION['role_id'] ?? 0) != 1) {
     /* === SIDEBAR === */
     .sidebar {
       width: 250px;
-      background: linear-gradient(180deg, #0066ff, #00ccff);
+      background: linear-gradient(180deg, #1e3a8a 0%, #2563eb 45%, #e6c065 100%);
       color: white;
       display: flex;
       flex-direction: column;
@@ -84,7 +84,7 @@ if (empty($_SESSION['usuario']) || ($_SESSION['role_id'] ?? 0) != 1) {
       flex-wrap: wrap;
       margin-bottom: 15px;
     }
-    .prod-sidebar button { flex: 1; background: #00ccff; color: white; border-radius: 8px; }
+    .prod-sidebar button { flex: 1; background: #0066ff; color: white; border-radius: 8px; }
 
     .producto-item {
       background: white;
