@@ -79,9 +79,13 @@ if (isset($_GET['logout'])) {
   <!-- HEADER -->
   <header>
     <div class="logo"><img src="imagenes/LogoLionCell.png" witdh="75px" height="75px"> LION CELL</div>
-    <div class="search-bar">
-      <input type="text" placeholder="Encuentra lo que busques...">
-    </div>
+    <form class="search-bar" action="buscar.php" method="get" role="search">
+      <input type="search" name="q" placeholder="Encuentra lo que busques..." required autocomplete="off">
+      <button type="submit" aria-label="Buscar">
+        <i class="fa-solid fa-magnifying-glass"></i>
+      </button>
+    </form>
+
 
     <div class="account">
       
@@ -99,8 +103,8 @@ if (isset($_GET['logout'])) {
   <nav>
     <a href="lanzamientos.php">Lanzamientos</a>
     <a href="#categorias">Categorías</a>
-    <a href="marcas.php">Marcas</a>
-    <a href="ofertas.php" class="ofertas">Ofertas</a>
+    <a href="#productos" class="ofertas">Lo mas solicitado</a>
+    <a href="#contacto">Contactanos</a> 
   </nav>
 
   <!-- BANNERS -->
@@ -116,39 +120,49 @@ if (isset($_GET['logout'])) {
 
   <!-- CATEGORÍAS -->
   <section class="categories" id="categorias">
-    <div class="item">
-      <img src="imagenes/fundas.jpg" alt="Fundas">
-      <span>Fundas</span>
-    </div>
-    <div class="item">
-      <img src="imagenes/cargadores.jpg" alt="Cargadores">
-      <span>Cargadores</span>
-    </div>
-    <div class="item">
-      <img src="imagenes/micas.jpg" alt="Micas">
-      <span>Micas</span>
-    </div>
-    <div class="item">
-      <img src="imagenes/audifonos.jpg" alt="Audífonos">
-      <span>Audífonos</span>
-    </div>
-    <div class="item">
-      <img src="imagenes/soportes.jpg" alt="Soportes">
-      <span>Soportes</span>
-    </div>
-    <div class="item">
-      <img src="imagenes/memorias.jpg" alt="Memorias">
-      <span>Memorias</span>
-    </div>
-    <div class="item">
-      <img src="imagenes/tarjeteros.jpg" alt="Tarjeteros">
-      <span>Tarjeteros</span>
-    </div>
+  <a href="buscar.php?q=funda" class="item">
+  <img src="imagenes/fundas.jpg" alt="Fundas">
+  <span>Fundas</span>
+</a>
+
+<a href="buscar.php?q=carga" class="item">
+  <img src="imagenes/cargadores.jpg" alt="Cargadores">
+  <span>Cargadores</span>
+</a>
+
+<a href="buscar.php?q=mica" class="item">
+  <img src="imagenes/micas.jpg" alt="Micas">
+  <span>Micas</span>
+</a>
+
+<a href="buscar.php?q=audifono" class="item">
+  <img src="imagenes/audifonos.jpg" alt="Audífonos">
+  <span>Audífonos</span>
+</a>
+
+<a href="buscar.php?q=memoria" class="item">
+  <img src="imagenes/memorias.jpg" alt="Memorias">
+  <span>Memorias</span>
+</a>
+
+
+  <!--
+  <a href="soportes.php" class="item">
+    <img src="imagenes/soportes.jpg" alt="Soportes">
+    <span>Soportes</span>
+  </a>-->
+
+  <!--
+  <a href="tarjeteros.php" class="item">
+    <img src="imagenes/tarjeteros.jpg" alt="Tarjeteros">
+    <span>Tarjeteros</span>
+  </a>-->
+
   </section>
 
   <!-- PRODUCTOS -->
   <section class="productos" id="productos">
-    <h1 class="head">Lo más vendido...</h1>
+    <h1 class="head">Lo más solicitado...</h1>
     <div class="box-container">
       <div class="box">
         <div class="image"><img src="imagenes/fundaIMotoG73.jpg" alt=""></div>
@@ -186,7 +200,7 @@ if (isset($_GET['logout'])) {
   <!-- FOOTER -->
   <footer class="footer">
     <div class="footer-container">
-      <div class="footer-section">
+      <div class="footer-section" id="contacto">
         <h3>Información</h3>
         <ul>
           <li><a href="informacion.php#contacto">Contacto</a></li>

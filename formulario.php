@@ -41,14 +41,14 @@
                 <form action="php/login_usuario_be.php" method="POST" class="formulario__login">
                     <h2>Iniciar Sesión</h2>
                     <div class="campo-select">
-                        <label for="tipo">Tipo:</label>
+                        <label for="tipo">Tipo: *</label>
                         <select id="tipo" name="tipo" required>
                         <option value="usuario">Usuario</option>
                         <option value="administrador">Administrador</option>
                         </select>
                     </div>
-                    <input type="email" placeholder="Correo Electrónico" name="correo" required>
-                    <input type="password" placeholder="Contraseña" name="contrasena" minlength="8" maxlength="25" pattern="^(?=\S{8,25}$)(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]+$" required title="8–25 caracteres, sin espacios, con al menos 1 letra y 1 número.">
+                    <input type="email" placeholder="Correo Electrónico *" name="correo" required>
+                    <input type="password" placeholder="Contraseña *" name="contrasena" minlength="8" maxlength="25" pattern="^(?=\S{8,25}$)(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]+$" required title="8–25 caracteres, sin espacios, con al menos 1 letra y 1 número.">
                     <a href="reset-pass/forgot_password.html">¿Olvidaste tu contraseña?</a>
                     <button>Entrar</button>
                 </form>
@@ -60,7 +60,7 @@
                     <!-- Usuario: sin espacios, sin caracteres especiales, máx 30 -->
                     <input
                     type="text"
-                    placeholder="Usuario"
+                    placeholder="Usuario *"
                     name="usuario"
                     id="usuario"
                     minlength="3"
@@ -73,7 +73,7 @@
                     <!-- Nombre: SIN números ni símbolos; permite espacios simples entre palabras -->
                     <input
                     type="text"
-                    placeholder="Nombres"
+                    placeholder="Nombres *"
                     name="nombre"
                     id="nombre"
                     minlength="1"
@@ -86,7 +86,7 @@
                     <!-- Apellido Paterno: solo letras, SIN espacios -->
                     <input
                     type="text"
-                    placeholder="Apellido Paterno"
+                    placeholder="Apellido Paterno *"
                     name="app"
                     id="app"
                     minlength="1"
@@ -112,7 +112,7 @@
                     <!-- Correo: type=email + patrón ASCII con TLD (2–24 letras) -->
                     <input
                     type="email"
-                    placeholder="Correo electrónico"
+                    placeholder="Correo electrónico *"
                     name="correo"
                     id="correo"
                     maxlength="80"
@@ -124,7 +124,7 @@
                     <!-- Contraseña (como ya la tienes, sin espacios, 8–25, 1 letra + 1 número) -->
                     <input
                     type="password"
-                    placeholder="Contraseña"
+                    placeholder="Contraseña *"
                     name="contrasena"
                     id="contrasena"
                     minlength="8"

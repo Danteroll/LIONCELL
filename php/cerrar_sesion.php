@@ -110,7 +110,7 @@ session_destroy();
 <head>
     <title>Alerta de sesión cerrada</title>
     <style>
-        /* (aquí deja todo tu CSS tal como lo tienes) */
+
     </style>
 </head>
 <body>
@@ -134,7 +134,7 @@ session_destroy();
     <script>
         // Redirección automática en 2.5 segundos
         setTimeout(function() {
-            window.location.href = "../formulario.php";
+            window.location.href = "../index.php";
         }, 2500);
     </script>
 </body>
