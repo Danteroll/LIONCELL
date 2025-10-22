@@ -1,14 +1,3 @@
-<?php
-//session_star para usuarios
-require_once __DIR__ . '/inc/init.php';
-
-if (isset($_GET['logout'])) {
-    session_destroy();
-    header("Location: formulario.php");
-    exit;
-}
-?>
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -20,38 +9,114 @@ if (isset($_GET['logout'])) {
 </head>
 <body>
 
-  <!-- HEADER -->
-  <header>
-    <div class="logo"><img src="imagenes/LogoLionCell.png" witdh="75px" height="75px"> LION CELL</div>
-    <div class="search-bar">
-      <input type="text" placeholder="Encuentra lo que busques...">
-    </div>
-    <div class="account">
-      <div class="cart">🛒</div>
-      <?php if (!isset($_SESSION['usuario'])): ?>
-          <a href="formulario.php" id="loginBtn">Ingresar / Registrar</a>
-      <?php endif; ?>
-      <?php if (isset($_SESSION['usuario'])): ?>
-          <a href="perfil/home.php"><i class="fa-solid fa-user">👤</i></a>
-      <?php else: ?>
-          <a href="formulario.php"><i class="fa-solid fa-right-to-bracket"></i></a>
-      <?php endif; ?>
-    </div>
-  </header>
+<style>
 
-  <!-- NAV -->
-  <nav>
-    <a href="index.php">🏠</a>
-    <a href="lanzamientos.php">Lanzamientos</a>
-    <a href="categorias.php">Categorías</a>
-    <a href="marcas.php">Marcas</a>
-    <a href="ofertas.php" class="ofertas">Ofertas</a>
-  </nav>
+   body { font-family: Arial, sans-serif; background-color: #f7f7f7; margin:0; padding:0;}
+    header { background:  linear-gradient(90deg, #1e3a8a 0%, #2563eb 45%, #e6c065 100%); color:white; padding:15px 20px; display:flex; justify-content:space-between; align-items:center; }
+    header h1 { margin:0; font-size:1.5rem; }
+    header a { color:white; text-decoration:none; padding:8px 15px; border-radius:5px; }
+
+ .lc-breadcrumbs{
+  max-width:1200px;
+  margin:12px auto 0;
+  padding:0 16px;
+  color:#888;
+  font-size:13px;
+}
+.lc-breadcrumbs a{ color:#666; text-decoration:none; }
+.lc-breadcrumbs a:hover{ text-decoration:underline; }
+.lc-breadcrumbs span{ margin:0 6px; }
+.lc-breadcrumbs .current{ color:#222; }
+
+.lc-grid{
+  display:grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap:24px;
+}
+.lc-card{
+  background:#fff;
+  border:1px solid rgba(10,10,10,.08);
+  border-radius:12px;
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+}
+.lc-card img{
+  width:100%; height:220px; object-fit:contain; background:#fff;
+}
+.card-body{ padding:12px 14px 16px; display:flex; flex-direction:column; gap:8px; }
+.price{ font-weight:700; color:#222; }
+.name{
+  font-size:14px; font-weight:500; color:#333; line-height:1.35;
+  height:3.6em; overflow:hidden;
+}
+
+/* Botones como en la imagen (azul y dorado) */
+.btn{
+  margin-top:8px;
+  padding:10px 14px;
+  border:none;
+  border-radius:8px;
+  font-weight:700;
+  color:#fff;
+  cursor:pointer;
+}
+.btn-primary{ background:#2E77FF; }
+.btn-primary:hover{ background:#2467e8; }
+.btn-alt{ background:#D4AE59; color:#fff; }
+.btn-alt:hover{ background:#c89d44; }
+
+.lc-filters{
+  background:#fff;
+  border:1px solid rgba(10,10,10,.08);
+  border-radius:12px;
+  padding:16px;
+  height:max-content;
+}
+.lc-filters h3{
+  font-size:16px; font-weight:700; margin-bottom:10px;
+}
+.f-group{ border-top:1px solid #eee; padding:10px 0; }
+.f-group:first-of-type{ border-top:none; padding-top:0; }
+.f-group summary{
+  cursor:pointer; list-style:none; font-weight:600; color:#333;
+}
+.f-group[open] summary{ color:#0B3B8E; }
+.f-list{ display:flex; flex-direction:column; gap:8px; margin-top:10px; }
+.f-list label{ font-size:14px; color:#444; }
+
+.f-range{ margin-top:10px; }
+.f-range input[type="range"]{ width:100%; }
+.f-nums{
+  display:flex; align-items:center; gap:8px; margin-top:10px;
+}
+.f-nums .dash{ color:#888; }
+.f-nums input[type="number"]{
+  width:110px; padding:8px 10px; border:1px solid #e6e9f0; border-radius:10px;
+}
+
+/* ====== Contenido ====== */
+.lc-content{ min-width:0; }
+.lc-title{
+  font-size:28px;
+  font-weight:700;
+  margin-bottom:18px;
+}
+
+footer { background-color:  #646464ff; color:white; text-align:center; padding:15px; margin-top:30px; }
+  .volver-inicio { display:inline-block; margin:20px; padding:10px 15px; background:#0063f7; color:white; text-decoration:none; border-radius:5px; transition: background 0.3s; }
+    .volver-inicio:hover { background:#004aad; }
+
+  </style>
 
   <!-- Breadcrumb -->
-  <div class="lc-breadcrumbs">
-    <a href="index.php">Inicio</a> <span>›</span> <span class="current">Lanzamientos</span>
-  </div>
+  
+
+   <header>
+    <div class="logo"><img src="imagenes/LogoLionCell.png" width="60" height="60"> LION CELL</div>
+    <h1>Lanzamientos</h1>
+    <a href="index.php" class="volver-inicio">← Volver al inicio</a>
+  </header>
 
   <main class="lc-page">
     <!-- Sidebar -->
@@ -149,6 +214,10 @@ if (isset($_GET['logout'])) {
       </div>
     </section>
   </main>
+
+  <footer>
+  <p>&copy; 2025 LionCell. Todos los derechos reservados.</p>
+</footer>
 
   
 

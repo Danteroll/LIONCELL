@@ -120,11 +120,11 @@ session_destroy();
             <div class="alert-text">
                 <h2 class="alert-title">Sesión cerrada</h2>
                 <p class="alert-message">
-                    Tu sesión ha sido cerrada correctamente. Serás redirigido a la página principal en unos segundos.
+                    Tu sesión ha sido cerrada correctamente. Serás redirigido a la página para iniciar sesión en unos segundos.
                 </p>
                 <div class="alert-actions">
-                    <button class="alert-action" onclick="window.location.href='../index.php'">
-                        Ir a la página principal
+                    <button class="alert-action" onclick="window.location.href='../formulario.php'">
+                        Ir a la página de inicio de sesión
                     </button>
                 </div>
             </div>
@@ -134,7 +134,7 @@ session_destroy();
     <script>
         // Redirección automática en 2.5 segundos
         setTimeout(function() {
-            window.location.href = "../index.php";
+            window.location.href = "../formulario.php";
         }, 2500);
     </script>
 </body>
