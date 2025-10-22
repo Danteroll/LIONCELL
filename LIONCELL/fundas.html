@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fundas</title>
+ <style>
+  body {
+    font-family: Arial, sans-serif;
+    background-color: #f7f7f7;
+    margin: 0;
+    padding: 0;
+  }
+
+  header {
+    background-color: #2404a1;
+    color: white;
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  header h1 {
+    margin: 0;
+    font-size: 1.5rem;
+  }
+
+  header a {
+    color: white;
+    text-decoration: none;
+    font-size: 1rem;
+    background-color: #13005e00;
+    padding: 8px 15px;
+    border-radius: 5px;
+  }
+
+  .main-center-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    margin-top: 20px;
+  }
+
+  .form-container h1 {
+    font-size: 1.2rem;
+    margin-bottom: 15px;
+    margin-top: 0;
+  }
+
+  .form-container {
+    text-align: center;
+  }
+
+  .form-container h1 {
+    font-size: 1.2rem;
+    margin-bottom: 20px;
+  }
+
+  select {
+    padding: 8px 15px;
+    font-size: 1rem;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    margin: 5px 0;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 15px;
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .card {
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    padding: 10px;
+    transition: transform 0.2s;
+  }
+
+  .card:hover {
+    transform: scale(1.03);
+  }
+
+  .card img {
+    width: 100%;
+    height: 165px;
+    border-radius: 10px;
+    object-fit: cover;
+  }
+
+  footer {
+    background-color: #2404a1;
+    color: white;
+    text-align: center;
+    padding: 15px;
+    margin-top: 30px;
+  }
+</style>
+</head>
+<body>
+  <header>
+    <h1>Fundas</h1>
+    <a href="index.html">Volver al inicio</a>
+  </header>
+
+  <div class="main-center-container">
+    <div class="form-container">
+      <h1>¿QUÉ CELULAR TIENES?</h1>
+      <form id="mobile-form">
+        <select id="brand-select" name="brand">
+          <option value="">Marca</option>
+          <option value="apple">Apple</option>
+          <option value="samsung">Samsung</option>
+          <option value="motorola">Motorola</option>
+          <option value="xiaomi">Xiaomi</option>
+          <option value="oppo">Oppo</option>
+        </select>
+
+        <select id="model-select" name="model" disabled>
+          <option value="">Modelo</option>
+        </select>
+      </form>
+    </div>
+  </div>
+
+  <section class="grid" id="fundas-grid">
+    <div class="card" data-marca="motorola">
+      <img src="fundaIMotoG73.jpg" alt="Funda Motorola G73">
+      <h3>Funda Motorola G73</h3>
+      <p>$249 MXN</p>
+    </div>
+
+    <div class="card" data-marca="samsung">
+      <img src="fundaSamsungA54.jpg" alt="Funda Samsung A54">
+      <h3>Funda Samsung A54</h3>
+      <p>$259 MXN</p>
+    </div>
+
+    <div class="card" data-marca="apple">
+      <img src="fundaIphone13.png" alt="Funda iPhone 13">
+      <h3>Funda iPhone 13</h3>
+      <p>$299 MXN</p>
+    </div>
+
+    <div class="card" data-marca="xiaomi">
+      <img src="fundaXiaomiRedmi.jpg" alt="Funda Xiaomi Redmi">
+      <h3>Funda Xiaomi Redmi Note 12</h3>
+      <p>$239 MXN</p>
+    </div>
+
+    <div class="card" data-marca="samsung">
+      <img src="fundaSamsungA23.jpg" alt="Funda Samsung A23">
+      <h3>Funda Samsung A23</h3>
+      <p>$249 MXN</p>
+    </div>
+
+    <div class="card" data-marca="apple">
+      <img src="fundaIphone16.jpg" alt="Funda iPhone 16">
+      <h3>Funda iPhone 16</h3>
+      <p>$299 MXN</p>
+    </div>
+  </section>
+
+  <footer>
+    <p>&copy; 2025 LionCell. Todos los derechos reservados.</p>
+  </footer>
+
+  <script>
+    const brandSelect = document.getElementById('brand-select');
+    const modelSelect = document.getElementById('model-select');
+    const fundas = document.querySelectorAll('#fundas-grid .card');
+
+    // Crear lista de modelos por marca según los datos disponibles
+    const modelosPorMarca = {
+      apple: ['iPhone 13', 'iPhone 16'],
+      samsung: ['A54', 'A23'],
+      motorola: ['G73'],
+      xiaomi: ['Redmi Note 12'],
+      oppo: []
+    };
+
+    // Actualizar modelos cuando cambia la marca
+    brandSelect.addEventListener('change', () => {
+      const marca = brandSelect.value;
+      modelSelect.innerHTML = '<option value="">Modelo</option>';
+      modelSelect.disabled = !marca;
+
+      if (marca) {
+        modelosPorMarca[marca].forEach(modelo => {
+          const option = document.createElement('option');
+          option.value = modelo;
+          option.textContent = modelo;
+          modelSelect.appendChild(option);
+        });
+      }
+
+      filtrarFundas();
+    });
+
+    // Filtrar al cambiar modelo
+    modelSelect.addEventListener('change', filtrarFundas);
+
+    function filtrarFundas() {
+      const marca = brandSelect.value;
+      const modelo = modelSelect.value;
+
+      fundas.forEach(funda => {
+        const fundaMarca = funda.getAttribute('data-marca');
+        const fundaModelo = funda.querySelector('h3').textContent;
+
+        if ((marca === '' || fundaMarca === marca) &&
+            (modelo === '' || fundaModelo.includes(modelo))) {
+          funda.style.display = 'block';
+        } else {
+          funda.style.display = 'none';
+        }
+      });
+    }
+  </script>
+</body>
+</html>
