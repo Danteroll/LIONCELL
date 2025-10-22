@@ -152,7 +152,6 @@ if (empty($_SESSION['usuario']) || ($_SESSION['role_id'] ?? 0) != 1) {
       <h3>Panel de Administración</h3>
       <div class="user">
         <span>Administrador</span>
-        <img src="https://i.imgur.com/8Km9tLL.png" alt="admin">
       </div>
     </div>
 
