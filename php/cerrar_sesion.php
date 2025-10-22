@@ -120,11 +120,11 @@ session_destroy();
             <div class="alert-text">
                 <h2 class="alert-title">Sesión cerrada</h2>
                 <p class="alert-message">
-                    Tu sesión ha sido cerrada correctamente. Serás redirigido a la página para iniciar sesión en unos segundos.
+                    Tu sesión ha sido cerrada correctamente. Serás redirigido a la página principal en unos segundos.
                 </p>
                 <div class="alert-actions">
-                    <button class="alert-action" onclick="window.location.href='../formulario.php'">
-                        Ir a la página de inicio de sesión
+                    <button class="alert-action" onclick="window.location.href='../index.php'">
+                        Ir a la página principal
                     </button>
                 </div>
             </div>
