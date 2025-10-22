@@ -101,7 +101,7 @@ if (isset($_GET['logout'])) {
 
   <!-- NAV -->
   <nav>
-    <a href="lanzamientos.php">Lanzamientos</a>
+   <!-- <a href="lanzamientos.php">Lanzamientos</a>-->
     <a href="#categorias">Categorías</a>
     <a href="#productos" class="ofertas">Lo mas solicitado</a>
     <a href="#contacto">Contactanos</a> 

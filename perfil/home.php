@@ -1,7 +1,9 @@
    <?php
 
+   require_once __DIR__ . '/../inc/init.php'; // Ajusta la ruta si está en otra carpeta
+
    include 'config.php';
-   session_start();
+
    $user_id = $_SESSION['usuario'];
 
    if(!isset($user_id)){
@@ -44,6 +46,10 @@
          ?>
          <h3><?php echo $fetch['usuario']; ?></h3>
          <a href="../php/cerrar_sesion.php" class="delete-btn">Cerrar sesion</a>
+         <?php if (isAdmin()): ?>
+            <a href="../VistaAdm.php" class="delete-btn">Vista de Admin</a>
+         <?php endif; ?>
+
          <p><a href="../index.php">Regresar</a></p>
       </div>
 
