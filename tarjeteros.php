@@ -1,3 +1,13 @@
+<?php
+//session_star para usuarios
+require_once __DIR__ . '/inc/init.php';
+
+if (isset($_GET['logout'])) {
+    session_destroy();
+    header("Location: formulario.php");
+    exit;
+}
+?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
