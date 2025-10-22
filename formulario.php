@@ -105,7 +105,6 @@
                     minlength="1"
                     maxlength="30"
                     pattern="^[A-Za-zÁÉÍÓÚáéíóúÑñ]+$"
-                    required
                     title="Solo letras (incluye acentos), sin espacios."
                     >
 
