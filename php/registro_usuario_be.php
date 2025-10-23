@@ -13,7 +13,7 @@ $contrasena = $_POST['contrasena'] ?? '';
 // === VALIDACIONES BACKEND ===
 if (!esNombreValido($nombre))       salir("Nombre inválido (solo letras, espacios simples, sin números ni símbolos)");
 if (!esApellidoValido($app))        salir("Apellido paterno inválido (solo letras, sin espacios ni números)");
-if (!esApellidoValido($apm))        salir("Apellido materno inválido (solo letras, sin espacios ni números)");
+
 if (!esUsuarioValido($usuario))     salir("Usuario inválido (3–30 caracteres, solo letras/números, sin espacios)");
 if (!esCorreoASCIIValido($correo))  salir("Correo inválido (usa formato nombre@dominio.com sin ñ)");
 if (!esContrasenaValida($contrasena)) salir("Contraseña inválida (8–25 caracteres, al menos 1 letra y 1 número, sin espacios)");
