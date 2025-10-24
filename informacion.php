@@ -1,13 +1,3 @@
-<?php
-//session_star para usuarios
-require_once __DIR__ . '/inc/init.php';
-
-if (isset($_GET['logout'])) {
-    session_destroy();
-    header("Location: formulario.php");
-    exit;
-}
-?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -58,6 +48,25 @@ if (isset($_GET['logout'])) {
     <section id="nuestra-historia">
       <h2>Nuestra Historia</h2>
       <p>Lion Cell nació en 2020 con el objetivo de ofrecer accesorios de calidad para celulares en México. Nos especializamos en fundas, cargadores, micas, audífonos y más, buscando siempre la satisfacción de nuestros clientes.</p>
+    </section>
+
+    <!-- Nuevo apartado agregado -->
+    <section id="acerca-de-nosotros">
+      <h2>Acerca de nosotros</h2>
+      <p>Este sitio web es una iniciativa desarrollada por un equipo de trabajo enfocado en ofrecer una solución digital para una base de datos. Nuestro principal objetivo es proporcionar una experiencia de usuario clara y eficiente, así como también para el administrador. Agradecemos tu visita.</p>
+      <p><strong>Nombres de los colaboradores:</strong></p>
+      <ul>
+        <li>Eligio De León Aldo Daniel</li>
+        <li>Estrada Ovalle Daniel Darío</li>
+        <li>Estrada Reyna Dante Alejandro</li> 
+        <li>Garza Vázquez Rodrigo</li>
+        <li>Mauricio García Dana Sofía</li>
+        <li>Morales Ezquivel José Ángel</li>
+        <li>Niño Hernández América Monserrat</li>
+        <li>Quiroz Lara Kevin Uriel</li>
+        <li>Rodríguez Ruiz Montserrat</li>
+        <li>Zamora Peña Mía Fernanda</li> 
+      </ul>
     </section>
   </main>
 
