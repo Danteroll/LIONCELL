@@ -7,7 +7,7 @@ if (empty($_SESSION['usuario']) || (int)($_SESSION['role_id'] ?? 0) !== 1) {
 }
 
 // ======= Conexión PDO y utilidades =======
-require_once __DIR__ . '/inc/init.php'; // crea $pdo
+require_once __DIR__ . '/../inc/init.php'; // ← ruta correcta
 function h($s){ return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
 
 // Catálogos para selects
@@ -19,14 +19,20 @@ $dispositivos = $pdo->query("SELECT id_dispositivo, modelo FROM dispositivos ORD
 function guardarImagenProducto(array $file, string $sku): ?string {
     if (empty($file['name']) || $file['error'] === UPLOAD_ERR_NO_FILE) return null;
     if ($file['error'] !== UPLOAD_ERR_OK) throw new RuntimeException('Error al subir archivo.');
-    $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-    if (!in_array($ext, ['jpg','jpeg','png','webp'], true)) throw new RuntimeException('Extensión no permitida (jpg, jpeg, png, webp).');
 
-    $dir = __DIR__ . '/imagenes/productos/';
+    $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+    if (!in_array($ext, ['jpg','jpeg','png','webp'], true)) {
+        throw new RuntimeException('Extensión no permitida (jpg, jpeg, png, webp).');
+    }
+
+    // Guardar fuera de /adm, en /imagenes/productos
+    $dir = __DIR__ . '/../imagenes/productos/';
     if (!is_dir($dir)) mkdir($dir, 0775, true);
 
     $dest = $dir . $sku . '.' . $ext;
-    if (!move_uploaded_file($file['tmp_name'], $dest)) throw new RuntimeException('No se pudo mover la imagen.');
+    if (!move_uploaded_file($file['tmp_name'], $dest)) {
+        throw new RuntimeException('No se pudo mover la imagen.');
+    }
     // Ruta relativa que se guarda en BD
     return 'imagenes/productos/' . $sku . '.' . $ext;
 }
@@ -41,7 +47,18 @@ try {
         $nombre = trim($_POST['nombre'] ?? '');
         $id_m   = (int)($_POST['id_marca'] ?? 0);
         $id_c   = (int)($_POST['id_categoria'] ?? 0);
-        $id_d   = (int)($_POST['id_dispositivo'] ?? 0);
+
+        // Normaliza id_dispositivo
+        $id_d = isset($_POST['id_dispositivo']) && $_POST['id_dispositivo'] !== '' && $_POST['id_dispositivo'] !== '0'
+                  ? (int)$_POST['id_dispositivo']
+                  : null;
+
+        // Si la categoría es Accesorios => id_dispositivo = NULL
+        $accId = $pdo->query("SELECT id_categoria FROM categorias WHERE LOWER(nombre)='accesorios' LIMIT 1")->fetchColumn();
+        if ($accId && (int)$id_c === (int)$accId) {
+            $id_d = null;
+        }
+
         $precio = (float)($_POST['precio'] ?? 0);
         $costo  = (float)($_POST['costo'] ?? 0);
         $gasto  = (float)($_POST['gasto'] ?? 0);
@@ -53,6 +70,7 @@ try {
         $sql = "INSERT INTO productos (sku, nombre, id_marca, id_categoria, id_dispositivo, precio, costo, gasto, imagen)
                 VALUES (?,?,?,?,?,?,?,?,?)";
         $pdo->prepare($sql)->execute([$sku,$nombre,$id_m,$id_c,$id_d,$precio,$costo,$gasto,$ruta]);
+
         $msg = 'Producto creado correctamente.';
     }
 
@@ -62,14 +80,18 @@ try {
         $nombre = trim($_POST['nombre'] ?? '');
         $id_m   = (int)($_POST['id_marca'] ?? 0);
         $id_c   = (int)($_POST['id_categoria'] ?? 0);
-        $id_d   = (int)($_POST['id_dispositivo'] ?? 0);
-        $id_d = isset($_POST['id_dispositivo']) && $_POST['id_dispositivo'] !== '' && $_POST['id_dispositivo'] !== '0'
+
+        // Normaliza id_dispositivo
+        $id_d = (isset($_POST['id_dispositivo']) && $_POST['id_dispositivo'] !== '' && $_POST['id_dispositivo'] !== '0')
                   ? (int)$_POST['id_dispositivo']
                   : null;
+
+        // Si la categoría es Accesorios => id_dispositivo = NULL
         $accId = $pdo->query("SELECT id_categoria FROM categorias WHERE LOWER(nombre)='accesorios' LIMIT 1")->fetchColumn();
         if ($accId && (int)$id_c === (int)$accId) {
             $id_d = null;
         }
+
         $precio = (float)($_POST['precio'] ?? 0);
         $costo  = (float)($_POST['costo'] ?? 0);
         $gasto  = (float)($_POST['gasto'] ?? 0);
@@ -94,7 +116,6 @@ try {
         }
         $pdo->prepare($sql)->execute($params);
         $msg = 'Producto actualizado correctamente.';
-        
     }
 
     if ($action === 'delete_product') {
@@ -103,22 +124,6 @@ try {
         $pdo->prepare("DELETE FROM productos WHERE id_producto=?")->execute([$id]);
         $msg = 'Producto eliminado.';
     }
-    // --- USUARIOS: eliminar o cambiar rol ---
-if ($action === 'delete_user') {
-    $id = (int)($_POST['id_usuario'] ?? 0);
-    if ($id > 0) {
-        $pdo->prepare("DELETE FROM usuarios WHERE id = ?")->execute([$id]);
-        $msg = 'Usuario eliminado correctamente.';
-    }
-}
-
-if ($action === 'make_admin') {
-    $id = (int)($_POST['id_usuario'] ?? 0);
-    if ($id > 0) {
-        $pdo->prepare("UPDATE usuarios SET role_id = 1 WHERE id = ?")->execute([$id]);
-        $msg = 'Usuario actualizado a administrador.';
-    }
-}
 
 } catch (Throwable $e) {
     $err = $e->getMessage();
@@ -149,25 +154,6 @@ $st = $pdo->prepare($sqlListado);
 $st->execute($par);
 $productosListado = $st->fetchAll();
 
-// ======= Inventario (todo, sin límite) =======
-$inv_cat   = (int)($_GET['inv_cat'] ?? 0);
-$inv_marca = (int)($_GET['inv_marca'] ?? 0);
-
-$whereInv = []; $parInv = [];
-if ($inv_cat > 0)   { $whereInv[]="p.id_categoria=?"; $parInv[]=$inv_cat; }
-if ($inv_marca > 0) { $whereInv[]="p.id_marca=?";     $parInv[]=$inv_marca; }
-$wInv = $whereInv ? 'WHERE '.implode(' AND ', $whereInv) : '';
-
-$sqlInv = "SELECT p.*, m.nombre AS marca, c.nombre AS categoria, d.modelo
-           FROM productos p
-           LEFT JOIN marcas m ON m.id_marca = p.id_marca
-           LEFT JOIN categorias c ON c.id_categoria = p.id_categoria
-           LEFT JOIN dispositivos d ON d.id_dispositivo = p.id_dispositivo
-           $wInv
-           ORDER BY c.nombre, m.nombre, d.modelo, p.nombre";
-$sti = $pdo->prepare($sqlInv);
-$sti->execute($parInv);
-$inventarioListado = $sti->fetchAll();
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -175,7 +161,7 @@ $inventarioListado = $sti->fetchAll();
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Panel de Administrador - Negocio de Fundas</title>
-<link rel="stylesheet" href="adm/estilos.css">
+<link rel="stylesheet" href="estilos.css">
 </head>
 <body>
 
@@ -183,12 +169,12 @@ $inventarioListado = $sti->fetchAll();
   <div class="sidebar">
     <h2>Admin Panel</h2>
     <div class="menu">
-      <!-- <a href="VistaAdm.php">Catálogo</a>-->
-      <a href="adm/VistaAdmUsuario.php">👤 Usuarios</a>
-      <a href="adm/VistaAdmProducto.php">🛍 Productos</a>
-      <a href="adm/VistaAdmVentas">📊 Reporte de Ventas</a>
-      <a href="adm/VistaAdmInventario.php">📋 Inventario</a>
-      <a href="index.php">Vista de Usuario</a>
+       <!-- <a href="VistaAdm.php">Catálogo</a>-->
+      <a href="VistaAdmUsuario.php">👤 Usuarios</a>
+      <a href="VistaAdmProducto.php" class="active">🛍 Productos</a>
+      <a href="VistaAdmVentas.php">📊 Reporte de Ventas</a>
+      <a href="VistaAdmInventario.php">📋 Inventario</a>
+      <a href="../index.php">Vista de Usuario</a>
     </div>
   </div>
 
@@ -199,112 +185,15 @@ $inventarioListado = $sti->fetchAll();
       <div class="user"><span>Administrador</span></div>
     </div>
 
-    <!-- ===== Catálogo (placeholder con tu estilo) ===== -->
-    <section id="catalogo" class="active">
-      <h1>Catálogo de Productos</h1>
-      <div class="prod-sidebar">
-        <button onclick="mostrarCatalogoCategoria('fundas')">Fundas</button>
-        <button onclick="mostrarCatalogoCategoria('micas')">Micas</button>
-        <button onclick="mostrarCatalogoCategoria('audifonos')">Audífonos</button>
-        <button onclick="mostrarCatalogoCategoria('cargadores')">Cargadores</button>
-        <button onclick="mostrarCatalogoCategoria('soportes')">Soportes</button>
-        <button onclick="mostrarCatalogoCategoria('memoria')">Memoria</button>
-      </div>
-      <div id="contenido-catalogo">
-        <p>Selecciona una categoría para ver los productos disponibles.</p>
-      </div>
-    </section>
-
-        <!-- === USUARIOS === -->
-    <section id="usuarios">
-      <h1>Gestión de Usuarios</h1>
-
-      <?php
-      try {
-          // Trae todos los usuarios registrados
-          $usuarios = $pdo->query("
-              SELECT 
-                  nombre,
-                  app,
-                  apm,
-                  correo,
-                  usuario,
-                  role_id,
-                  id,
-                  CASE role_id 
-                      WHEN 1 THEN 'Administrador'
-                      ELSE 'Usuario'
-                  END AS rol
-              FROM usuarios
-              ORDER BY role_id DESC, nombre ASC
-          ")->fetchAll();
-      } catch (PDOException $e) {
-          echo '<div class="producto-item" style="background:#fff5f5;border:1px solid #fecaca;color:#991b1b">
-                  Error al obtener usuarios: ' . htmlspecialchars($e->getMessage()) . '
-                </div>';
-          $usuarios = [];
-      }
-      ?>
-
-      <?php if (empty($usuarios)): ?>
-        <p>No hay usuarios registrados aún.</p>
-      <?php else: ?>
-        <table>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Nombres</th>
-              <th>Apellido paterno</th>
-              <th>Apellido materno</th>
-              <th>Usuario</th>
-              <th>Correo</th>
-              <th>Rol</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            <?php foreach ($usuarios as $u): ?>
-              <tr>
-                <td><?= htmlspecialchars($u['id']) ?></td>
-                <td><?= htmlspecialchars($u['nombre']) ?></td>
-                <td><?= htmlspecialchars($u['app']) ?></td>
-                <td><?= htmlspecialchars($u['apm']) ?></td>
-                <td><?= htmlspecialchars($u['usuario']) ?></td>
-                <td><?= htmlspecialchars($u['correo']) ?></td>
-                <td><?= htmlspecialchars($u['rol']) ?></td>
-                <td>
-                  <!-- Botones de acción -->
-                  <form method="post" style="display:inline" onsubmit="return confirm('¿Seguro que quieres eliminar este usuario?')">
-                    <input type="hidden" name="action" value="delete_user">
-                    <input type="hidden" name="id_usuario" value="<?= (int)$u['id'] ?>">
-                    <button class="btn" style="background:#ef4444">Eliminar</button>
-                  </form>
-
-                  <?php if ((int)$u['role_id'] !== 1): ?>
-                    <form method="post" style="display:inline" onsubmit="return confirm('¿Hacer administrador a este usuario?')">
-                      <input type="hidden" name="action" value="make_admin">
-                      <input type="hidden" name="id_usuario" value="<?= (int)$u['id'] ?>">
-                      <button class="btn" style="background:#00cc66">Hacer Admin</button>
-                    </form>
-                  <?php endif; ?>
-                </td>
-              </tr>
-            <?php endforeach; ?>
-          </tbody>
-        </table>
-      <?php endif; ?>
-    </section>
-
-
     <!-- ===== Productos (con BD) ===== -->
-    <section id="productos">
+    <section id="productos" class="active">
       <h1>Gestión de Productos</h1>
 
       <div class="prod-sidebar">
-        <!-- Importante: ancla y sec para permanecer en la sección -->
-        <form method="get" action="VistaAdm.php#productos" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <!-- Importante: acción a esta misma página para no saltar a catálogo -->
+        <form method="get" action="VistaAdmProducto.php#productos" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
           <input type="hidden" name="sec" value="productos">
-          <input type="text" name="q" placeholder="Buscar por nombre o SKU..." value="<?=h($q)?>" />
+          <input type="text" name="q" placeholder="Buscar por nombre o SKU..." value="<?=h($q)?>" style="flex:1;padding:8px;border-radius:5px;border:1px solid #ccc" />
           <select name="marca">
             <option value="0">Todas las marcas</option>
             <?php foreach($marcas as $mm): ?>
@@ -318,7 +207,7 @@ $inventarioListado = $sti->fetchAll();
             <?php endforeach; ?>
           </select>
           <button class="btn" type="submit">Filtrar</button>
-          <a class="btn" style="background:#ccc;color:#000" href="VistaAdm.php#productos">Limpiar</a>
+          <a class="btn" style="background:#ccc;color:#000" href="VistaAdmProducto.php#productos">Limpiar</a>
           <button type="button" class="btn" style="background:#00ccff" onclick="toggleFormCrear()">+ Agregar producto</button>
         </form>
       </div>
@@ -331,8 +220,8 @@ $inventarioListado = $sti->fetchAll();
       <?php endif; ?>
 
       <!-- Form Crear/Editar -->
-      <div id="formProducto" class="form-agregar">
-        <form method="post" enctype="multipart/form-data">
+      <div id="formProducto" class="form-agregar" style="display:none">
+        <form method="post" enctype="multipart/form-data" action="VistaAdmProducto.php#productos">
           <input type="hidden" name="action" id="formAction" value="create_product">
           <input type="hidden" name="id_producto" id="id_producto">
           <h4 id="formTitulo">Agregar nuevo producto</h4>
@@ -381,7 +270,7 @@ $inventarioListado = $sti->fetchAll();
 
           <div style="margin-top:10px;display:flex;gap:8px">
             <button class="btn" type="submit">Guardar</button>
-            <button class="btn" type="button" style="background:#ccc;color:#000" onclick="resetFormProducto()">Cancelar</button>
+            <button class="btn" type="button" style="background:#ccc;color:#000" onclick="toggleCerrar()">Cancelar</button>
           </div>
         </form>
       </div>
@@ -394,7 +283,7 @@ $inventarioListado = $sti->fetchAll();
           <?php foreach($productosListado as $p): ?>
             <div class="producto-item">
               <div style="display:flex;gap:12px;align-items:center">
-                <img src="<?=h($p['ruta_img'])?>" alt="" style="width:70px;height:70px;object-fit:cover;border-radius:10px;border:1px solid #ddd">
+               <img src="<?=h('../' . ltrim($p['ruta_img'], '/'))?>" alt="" style="width:70px;height:70px;object-fit:cover;border-radius:10px;border:1px solid #ddd">
                 <div style="flex:1">
                   <b><?=h($p['nombre'])?></b><br>
                   <span class="badge"><?=h($p['sku'])?></span>
@@ -418,7 +307,7 @@ $inventarioListado = $sti->fetchAll();
                   <?= (float)$p["gasto"] ?>
                 )'>Editar</button>
 
-                <form method="post" onsubmit="return confirm('¿Eliminar este producto?')">
+                <form method="post" action="VistaAdmProducto.php#productos" onsubmit="return confirm('¿Eliminar este producto?')">
                   <input type="hidden" name="action" value="delete_product">
                   <input type="hidden" name="id_producto" value="<?= (int)$p['id_producto'] ?>">
                   <button class="btn" style="background:#ef4444">Borrar</button>
@@ -429,103 +318,21 @@ $inventarioListado = $sti->fetchAll();
         <?php endif; ?>
       </div>
     </section>
-
-    <!-- ===== Reporte (placeholder) ===== -->
-    <section id="reporte">
-      <h1>Reporte de Ventas</h1>
-      <div id="contenido-reporte">
-        <p>No hay ventas registradas aún.</p>
-      </div>
-    </section>
-
-    <!-- ===== Inventario (desde BD) ===== -->
-    <section id="inventario">
-      <h1>Inventario de Productos</h1>
-
-      <div class="prod-sidebar">
-        <form method="get" action="VistaAdm.php#inventario" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-          <input type="hidden" name="sec" value="inventario">
-          <select name="inv_cat">
-            <option value="0">Todas las categorías</option>
-            <?php foreach($categorias as $cc): ?>
-              <option value="<?=$cc['id_categoria']?>" <?= ($inv_cat===$cc['id_categoria'])?'selected':''; ?>><?=h($cc['nombre'])?></option>
-            <?php endforeach; ?>
-          </select>
-
-          <select name="inv_marca">
-            <option value="0">Todas las marcas</option>
-            <?php foreach($marcas as $mm): ?>
-              <option value="<?=$mm['id_marca']?>" <?= ($inv_marca===$mm['id_marca'])?'selected':''; ?>><?=h($mm['nombre'])?></option>
-            <?php endforeach; ?>
-          </select>
-
-          <button class="btn" type="submit">Filtrar</button>
-          <a class="btn" style="background:#ccc;color:#000" href="VistaAdm.php#inventario">Limpiar</a>
-        </form>
-      </div>
-
-      <div id="contenido-inventario">
-        <?php if (empty($inventarioListado)): ?>
-          <p>No hay productos en inventario.</p>
-        <?php else: ?>
-          <table>
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>SKU</th>
-                <th>Nombre</th>
-                <th>Marca</th>
-                <th>Categoría</th>
-                <th>Modelo</th>
-                <th>Precio</th>
-              </tr>
-            </thead>
-            <tbody>
-              <?php foreach($inventarioListado as $row): ?>
-                <tr>
-                  <td><?= (int)$row['id_producto'] ?></td>
-                  <td><?= h($row['sku']) ?></td>
-                  <td><?= h($row['nombre']) ?></td>
-                  <td><?= h($row['marca'] ?: '—') ?></td>
-                  <td><?= h($row['categoria'] ?: '—') ?></td>
-                  <td><?= h($row['modelo'] ?: '—') ?></td>
-                  <td>$<?= number_format((float)$row['precio'], 2) ?></td>
-                </tr>
-              <?php endforeach; ?>
-            </tbody>
-          </table>
-        <?php endif; ?>
-      </div>
-    </section>
-
-  </div><!-- /main-content -->
+  </div>
 
 <script>
-  // Navegación de secciones
-  function showSection(id) {
-    document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
-    const el = document.getElementById(id);
-    if (el) el.classList.add('active');
-
-    // Sidebar activo
-    document.querySelectorAll('.menu a').forEach(a => a.classList.remove('active'));
-    const link = Array.from(document.querySelectorAll('.menu a')).find(a => a.getAttribute('onclick') && a.getAttribute('onclick').includes(`'${id}'`));
-    if (link) link.classList.add('active');
-
-    // hash para permitir refresh/compartir
-    location.hash = id;
-  }
-
-  // Mantener la sección correcta al entrar por ?sec= o #hash
-  (function initSection(){
-    const params = new URLSearchParams(location.search);
-    const secByParam = params.get('sec');
-    const secByHash  = location.hash ? location.hash.substring(1) : '';
-    const section    = secByParam || secByHash || 'catalogo';
-    showSection(section);
-  })();
+  // Mantener la sección visible (esta página solo muestra productos)
+  function showSection(){}
 
   // Form Crear/Editar
+function toggleCerrar() {
+  const f = document.getElementById('formProducto');
+  if (f.style.display === 'block') {
+    // Si ya está abierto → solo ocultar
+    f.style.display = 'none';
+    return;
+  }}
+
   function toggleFormCrear(){
     const f = document.getElementById('formProducto');
     resetFormProducto();
@@ -536,9 +343,12 @@ $inventarioListado = $sti->fetchAll();
     document.getElementById('formTitulo').textContent = 'Agregar nuevo producto';
     document.getElementById('formAction').value = 'create_product';
     document.getElementById('id_producto').value = '';
-    ['sku','nombre','precio','costo','gasto'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
-    ['id_marca','id_categoria','id_dispositivo'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value='0'; });
-    // No cierro el form aquí; solo se cierra si el usuario pulsa "Cancelar"
+    ['sku','nombre','precio','costo','gasto'].forEach(id=>{
+      const el=document.getElementById(id); if(el) el.value='';
+    });
+    ['id_marca','id_categoria','id_dispositivo'].forEach(id=>{
+      const el=document.getElementById(id); if(el) el.value='0';
+    });
   }
   function editarProducto(id, sku, nombre, id_marca, id_categoria, id_dispositivo, precio, costo, gasto){
     const f = document.getElementById('formProducto');

@@ -7,6 +7,22 @@ if (isset($_GET['logout'])) {
     header("Location: formulario.php");
     exit;
 }
+
+
+$sql = "
+SELECT 
+  p.nombre,
+  p.precio,
+  COALESCE(NULLIF(p.imagen,''), 'imagenes/default.png') AS imagen,
+  COALESCE(i.stock_actual, 0) AS cantidad
+FROM productos p
+LEFT JOIN inventario i ON i.id_producto = p.id_producto
+ORDER BY cantidad ASC
+LIMIT 6
+";
+$productos = $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+
+
 ?>
 <style>
     .fa-solid{ font-size:20px; }
@@ -93,8 +109,8 @@ if (isset($_GET['logout'])) {
           <a href="formulario.php" id="loginBtn">Ingresar / Registrar</a>
       <?php endif; ?>
       <?php if (isset($_SESSION['usuario'])): ?>
-          <div class="cart"><i class="fa-solid fa-cart-shopping"></i></div>
-          <a href="perfil/home.php"><i class="fa-solid fa-user"></i></a>
+          <a href="compras.php"><i class="fa-solid fa-cart-shopping"></i>Carrito</a>
+          <a href="perfil/home.php"><i class="fa-solid fa-user"></i>Perfil</a>
       <?php endif; ?>
     </div>
   </header>
@@ -103,7 +119,7 @@ if (isset($_GET['logout'])) {
   <nav>
    <!-- <a href="lanzamientos.php">Lanzamientos</a>-->
     <a href="#categorias">Categorías</a>
-    <a href="#productos" class="ofertas">Lo mas solicitado</a>
+    <a href="#productos" class="ofertas">Lo más solicitado</a>
     <a href="#contacto">Contactanos</a> 
   </nav>
 
@@ -144,58 +160,30 @@ if (isset($_GET['logout'])) {
   <img src="imagenes/memorias.jpg" alt="Memorias">
   <span>Memorias</span>
 </a>
-
-
-  <!--
-  <a href="soportes.php" class="item">
-    <img src="imagenes/soportes.jpg" alt="Soportes">
-    <span>Soportes</span>
-  </a>-->
-
-  <!--
-  <a href="tarjeteros.php" class="item">
-    <img src="imagenes/tarjeteros.jpg" alt="Tarjeteros">
-    <span>Tarjeteros</span>
-  </a>-->
-
   </section>
 
   <!-- PRODUCTOS -->
   <section class="productos" id="productos">
-    <h1 class="head">Lo más solicitado...</h1>
-    <div class="box-container">
-      <div class="box">
-        <div class="image"><img src="imagenes/fundaIMotoG73.jpg" alt=""></div>
-        <h3>Funda Motorola G73</h3>
-        <div class="precio">$100.00</div>
-      </div>
-      <div class="box">
-        <div class="image"><img src="imagenes/fundaIMotoG73.jpg" alt=""></div>
-        <h3>Funda Samsung A54</h3>
-        <div class="precio">$120.00</div>
-      </div>
-      <div class="box">
-        <div class="image"><img src="imagenes/fundaIMotoG73.jpg" alt=""></div>
-        <h3>Funda Samsung A54</h3>
-        <div class="precio">$120.00</div>
-      </div>
-      <div class="box">
-        <div class="image"><img src="imagenes/fundaIMotoG73.jpg" alt=""></div>
-        <h3>Funda Samsung A54</h3>
-        <div class="precio">$120.00</div>
-      </div>
-      <div class="box">
-        <div class="image"><img src="imagenes/fundaIMotoG73.jpg" alt=""></div>
-        <h3>Funda Samsung A54</h3>
-        <div class="precio">$120.00</div>
-      </div>
-      <div class="box">
-        <div class="image"><img src="imagenes/fundaIMotoG73.jpg" alt=""></div>
-        <h3>Funda Samsung A54</h3>
-        <div class="precio">$120.00</div>
-      </div>
-    </div>
-  </section>
+  <h1 class="head">Lo más solicitado...</h1>
+  <div class="box-container">
+
+    <?php if (empty($productos)): ?>
+      <p>No hay productos disponibles.</p>
+    <?php else: ?>
+      <?php foreach ($productos as $p): ?>
+        <div class="box">
+          <div class="image">
+            <img src="<?= htmlspecialchars($p['imagen']) ?>" alt="<?= htmlspecialchars($p['nombre']) ?>">
+          </div>
+          <h3><?= htmlspecialchars($p['nombre']) ?></h3>
+          <div class="precio">$<?= number_format((float)$p['precio'], 2) ?></div>
+        </div>
+      <?php endforeach; ?>
+    <?php endif; ?>
+
+  </div>
+</section>
+
 
   <!-- FOOTER -->
   <footer class="footer">
