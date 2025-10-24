@@ -110,7 +110,7 @@ $productos = $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
       <?php endif; ?>
       <?php if (isset($_SESSION['usuario'])): ?>
           <a href="compras.php"><i class="fa-solid fa-cart-shopping"></i>Carrito</a>
-          <a href="perfil/home.php"><i class="fa-solid fa-user"></i>Perfil</a>
+          <a href="perfil/home.php"><i class="fa-solid fa-user"></i>Perfil usuario</a>
       <?php endif; ?>
     </div>
   </header>
@@ -120,7 +120,7 @@ $productos = $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
    <!-- <a href="lanzamientos.php">Lanzamientos</a>-->
     <a href="#categorias">Categorías</a>
     <a href="#productos" class="ofertas">Lo más solicitado</a>
-    <a href="#contacto">Contactanos</a> 
+    <a href="#contacto">Contáctanos</a> 
   </nav>
 
   <!-- BANNERS -->

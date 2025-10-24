@@ -60,7 +60,7 @@
                     <!-- Usuario: sin espacios, sin caracteres especiales, máx 30 -->
                     <input
                     type="text"
-                    placeholder="Usuario *"
+                    placeholder="Nombre de usuario *"
                     name="usuario"
                     id="usuario"
                     minlength="3"
