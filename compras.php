@@ -1,5 +1,8 @@
 <?php
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
 $carrito = $_SESSION['carrito'] ?? [];
 $total = 0;
 
@@ -8,7 +11,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Actualizar cantidades
     if (isset($_POST['cantidades'])) {
         foreach ($_POST['cantidades'] as $id => $cant) {
-            $cant = max(1,(int)$cant);
+            $cant = max(1, (int)$cant);
             if (isset($carrito[$id])) $carrito[$id]['cantidad'] = $cant;
         }
     }
@@ -24,7 +27,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
 }
 
-// Helpers
 function h($s){ return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
 ?>
 <!DOCTYPE html>
@@ -50,6 +52,8 @@ button:hover{background:#1e3a8a;}
 .total-row td{font-weight:800;text-align:right;}
 a.back{display:inline-block;margin-top:12px;color:#2563eb;text-decoration:none;}
 a.back:hover{text-decoration:underline;}
+.btn-pedir{display:inline-block;margin-top:20px;padding:10px 20px;border:none;border-radius:8px;background:#22c55e;color:#fff;cursor:pointer;}
+.btn-pedir:hover{background:#16a34a;}
 </style>
 </head>
 <body>
@@ -82,6 +86,11 @@ a.back:hover{text-decoration:underline;}
 </tr>
 </table>
 </form>
+
+<form action="procesar_pedido.php" method="post" onsubmit="return confirm('¿Confirmar pedido?');">
+  <button type="submit" class="btn-pedir">Pedir ahora</button>
+</form>
+
 <a href="index.php" class="back">🛍 Seguir comprando</a>
 <?php endif; ?>
 </main>

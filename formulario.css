@@ -109,7 +109,7 @@ main {
 .contenedor__login-register form h2 {
     font-size: 28px;
     text-align: center;
-    margin-bottom: 25px;
+    margin-bottom: 1px;
     color: #1e3a8a; /* azul Lion Cell */
     font-weight: 800;
 }
@@ -234,4 +234,43 @@ main {
 /* Flecha del select (solo si quieres una flecha moderna) */
 .campo-select select::-ms-expand {
     display: none;
+}
+.region-select {
+  background-color: #e8f6f0;       /* verde claro como tus inputs */
+  border: none;
+  border-radius: 12px;
+  padding: 12px;
+  font-size: 14px;
+  color: #333;
+  flex: 0 0 45%;                  /* ocupa 45% del ancho */
+  box-shadow: inset 0 0 4px rgba(0,0,0,0.05);
+  transition: all 0.2s ease-in-out;
+  outline: none;
+  cursor: pointer;
+  margin-top: 20px;
+}
+
+.region-select:hover {
+  background-color: #d9f0e5;
+}
+
+.region-select:focus {
+  box-shadow: 0 0 0 2px #2563eb66; /* azul translúcido */
+}
+
+.telefono-input {
+  background-color: #e8f6f0;
+  border: none;
+  border-radius: 12px;
+  padding: 12px;
+  font-size: 14px;
+  flex: 1;
+  color: #333;
+  box-shadow: inset 0 0 4px rgba(0,0,0,0.05);
+  transition: all 0.2s ease-in-out;
+}
+
+.telefono-input:focus {
+  box-shadow: 0 0 0 2px #2563eb66;
+  outline: none;
 }

@@ -119,6 +119,27 @@
                     required
                     title="Escribe un correo válido (ej. nombre@dominio.com). Solo ASCII, TLD de 2 a 24 letras."
                     >
+                    <div style="display:flex;gap:8px;align-items:center;">
+                    <select name="region" id="region" required class="region-select">
+                        <option value="+52" selected>🇲🇽 +52 (México)</option>
+                        <option value="+1">🇺🇸 +1 (EE.UU.)</option>
+                        <option value="+54">🇦🇷 +54 (Argentina)</option>
+                        <option value="+57">🇨🇴 +57 (Colombia)</option>
+                        <option value="+58">🇻🇪 +58 (Venezuela)</option>
+                        <option value="+34">🇪🇸 +34 (España)</option>
+                    </select>
+
+                    <input 
+                        type="text" 
+                        id="telefono" 
+                        name="telefono" 
+                        maxlength="10" 
+                        required
+                        placeholder="Teléfono" 
+                        pattern="\d{10}" 
+                        title="Debe tener exactamente 10 números sin espacios ni símbolos"
+                        oninput="this.value=this.value.replace(/\D/g,'').slice(0,10)">
+                    </div>
 
                     <!-- Contraseña (como ya la tienes, sin espacios, 8–25, 1 letra + 1 número) -->
                     <input

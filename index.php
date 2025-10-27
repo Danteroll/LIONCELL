@@ -188,7 +188,7 @@ $productos = $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
             <h3><?= htmlspecialchars($p['nombre'] ?? '') ?></h3>
             <div class="precio">$<?= number_format((float)($p['precio'] ?? 0), 2) ?></div>
 
-            <!-- BOTÓN AGREGAR AL CARRITO CORREGIDO -->
+            <!-- BOTÓN AGREGAR AL CARRITO -->
             <form action="agregar_carrito.php" method="post" class="add-cart-form">
               <input type="hidden" name="id_producto" value="<?= htmlspecialchars($id) ?>">
               <input type="hidden" name="nombre" value="<?= htmlspecialchars($p['nombre'] ?? '') ?>">

@@ -9,7 +9,16 @@ $apm       = trim($_POST['apm'] ?? '');
 $correo    = trim($_POST['correo'] ?? '');
 $usuario   = trim($_POST['usuario'] ?? '');
 $contrasena = $_POST['contrasena'] ?? '';
+$region = $_POST['region'] ?? '+52';
+$telefono = trim($_POST['telefono'] ?? '');
 
+// Validación del teléfono
+if (!preg_match('/^\d{10}$/', $telefono)) {
+    die('❌ El número telefónico debe tener exactamente 10 dígitos sin espacios ni símbolos.');
+}
+
+// Combinar prefijo con número
+$telefonoCompleto = $region . $telefono;
 // === VALIDACIONES BACKEND ===
 if (!esNombreValido($nombre))       salir("Nombre inválido (solo letras, espacios simples, sin números ni símbolos)");
 if (!esApellidoValido($app))        salir("Apellido paterno inválido (solo letras, sin espacios ni números)");
@@ -39,10 +48,10 @@ $hash = password_hash($contrasena, PASSWORD_BCRYPT);
 
 // === INSERCIÓN SEGURA ===
 $stmt = $conexion->prepare(
-    "INSERT INTO usuarios (nombre, app, apm, correo, usuario, contrasena, role_id)
-     VALUES (?, ?, ?, ?, ?, ?, 2)"
+    "INSERT INTO usuarios (nombre, app, apm, correo, telefono, usuario, contrasena, role_id)
+     VALUES (?, ?, ?, ?, ?, ?, ?, 2)"
 );
-$stmt->bind_param("ssssss", $nombre, $app, $apm, $correo, $usuario, $hash);
+$stmt->bind_param("sssssss", $nombre, $app, $apm, $correo, $telefonoCompleto, $usuario, $hash);
 
 if ($stmt->execute()) {
     echo '

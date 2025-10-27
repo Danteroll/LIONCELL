@@ -35,3 +35,5 @@ function salir($msg, $back = true){
   }
   exit;
 }
+
+?>
