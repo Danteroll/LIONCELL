@@ -16,12 +16,9 @@ if (empty($correo) || empty($contrasena)) {
     echo '<script>alert("Completa correo y contraseña"); window.location="../formulario.php";</script>';
     exit();
 }
-// Si usas validacion.php, puedes hacer:
-// if (!esCorreoASCIIValido($correo)) { salir("Correo inválido"); }
-// if (!esContrasenaValida($contrasena)) { salir("Contraseña inválida"); }
 
 // Consulta segura al usuario por correo
-$stmt = $conexion->prepare("SELECT id, contrasena, role_id FROM usuarios WHERE correo = ? LIMIT 1");
+$stmt = $conexion->prepare("SELECT id, nombre, app, apm, correo, telefono, contrasena, role_id FROM usuarios WHERE correo = ? LIMIT 1");
 if (!$stmt) {
     echo '<script>alert("Error en el servidor. Intenta más tarde."); window.location="../formulario.php";</script>';
     exit();
@@ -54,9 +51,12 @@ if ((int)$user['role_id'] !== 1 && $tipoPet === 'administrador') {
     exit();
 }
 
-// Si todo ok, iniciar sesión
-$_SESSION['usuario'] = (int)$user['id'];
-$_SESSION['role_id']    = (int)$user['role_id'];
+$_SESSION['usuario']  = (int)$user['id'];
+$_SESSION['role_id']  = (int)$user['role_id'];
+$_SESSION['nombre']   = $user['nombre'] ?? '';
+$_SESSION['correo']   = $user['correo'] ?? '';
+$_SESSION['telefono'] = $user['telefono'] ?? '';
+
 
 // Redirección final: siempre basarse en la DB para permisos.
 // UX: si admin real y eligió 'usuario', podemos redirigir a la home (modo 'usuario').

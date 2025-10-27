@@ -54,7 +54,7 @@ p{color:#555;margin-bottom:24px;font-size:1rem;}
 <div class="card">
     <h2>✅ Producto agregado al carrito</h2>
     <p><strong><?= htmlspecialchars($nombre) ?></strong> se ha agregado correctamente.</p>
-    <a href="index.php" class="btn btn-continue">Seguir comprando</a>
+    <a href="buscar.php" class="btn btn-continue">Seguir comprando</a>
     <a href="compras.php" class="btn btn-cart">Ir al carrito 🛒</a>
 </div>
 </body>

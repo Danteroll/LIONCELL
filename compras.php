@@ -64,6 +64,7 @@ a.back:hover{text-decoration:underline;}
 <?php if(empty($carrito)): ?>
   <p>No tienes productos en el carrito.</p>
   <a href="index.php" class="back">← Volver a productos</a>
+  <a href="ver_pedidos.php" class="btn">📦 Ver mis pedidos</a>
 <?php else: ?>
 <form method="post">
 <table>
@@ -91,7 +92,7 @@ a.back:hover{text-decoration:underline;}
   <button type="submit" class="btn-pedir">Pedir ahora</button>
 </form>
 
-<a href="index.php" class="back">🛍 Seguir comprando</a>
+<a href="buscar.php" class="back">🛍 Seguir comprando</a>
 <?php endif; ?>
 </main>
 </body>

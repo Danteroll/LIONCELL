@@ -17,9 +17,11 @@ if (empty($carrito)) {
     $pdo->beginTransaction();
 
     // Datos del cliente (desde sesión)
-    $nombre_cliente = $_SESSION['usuario'];
-    $correo = $_SESSION['correo'] ?? null;
-    $telefono = $_SESSION['telefono'] ?? null;
+   $id_cliente     = $_SESSION['usuario'] ?? null;
+$nombre_cliente = trim(($_SESSION['nombre'] ?? '') . ' ' . ($_SESSION['app'] ?? ''));
+$correo         = $_SESSION['correo'] ?? '';
+$telefono       = $_SESSION['telefono'] ?? '';
+
 
     // Crear pedido
     $stmt = $pdo->prepare("INSERT INTO pedidos (nombre_cliente, correo, telefono, estado, total)
@@ -132,7 +134,7 @@ p{
   <p><?= $msg ?></p>
   <?php if ($ok): ?>
     <a href="index.php" class="btn btn-home">Volver al inicio</a>
-    <a href="compras.php" class="btn btn-continue">Ver mis pedidos</a>
+    <a href="ver_pedidos.php" class="btn btn-continue">Ver mis pedidos</a>
   <?php else: ?>
     <a href="compras.php" class="btn btn-error">Volver al carrito</a>
   <?php endif; ?>

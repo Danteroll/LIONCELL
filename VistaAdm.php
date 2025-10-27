@@ -186,7 +186,7 @@ $inventarioListado = $sti->fetchAll();
       <!-- <a href="VistaAdm.php">Catálogo</a>-->
       <a href="adm/VistaAdmUsuario.php">👤 Usuarios</a>
       <a href="adm/VistaAdmProducto.php">🛍 Productos</a>
-      <a href="adm/VistaAdmVentas">📊 Reporte de Ventas</a>
+      <a href="adm/VistaAdmVentas.php">📊 Reporte de Ventas</a>
       <a href="adm/VistaAdmInventario.php">📋 Inventario</a>
       <a href="index.php">Vista de Usuario</a>
     </div>
