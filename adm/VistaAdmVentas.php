@@ -168,20 +168,20 @@ button:hover{background:#1e3a8a;}
 <body>
 
 <div class="sidebar">
-  <h2>Admin Panel</h2>
+  <h2>Administración</h2>
   <div class="menu">
     <a href="VistaAdmUsuario.php">👤 Usuarios</a>
     <a href="VistaAdmProducto.php">🛍 Productos</a>
     <a href="VistaAdmPedidos.php">📦 Pedidos</a>
-    <a href="VistaAdmVentas.php" class="active">📊 Reporte de Ventas</a>
+    <a href="VistaAdmVentas.php" class="active">📊 Reporte de ventas</a>
     <a href="VistaAdmInventario.php">📋 Inventario</a>
-    <a href="../index.php">Vista de Usuario</a>
+    <a href="../index.php">Vista de usuario</a>
   </div>
 </div>
 
 <div class="main-content">
   <div class="topbar">
-    <h3>Reporte de Ventas</h3>
+    <h3>Reporte de ventas</h3>
     <div class="user"><span>Administrador</span></div>
   </div>
 

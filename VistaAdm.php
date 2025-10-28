@@ -31,7 +31,7 @@ $dispositivos = $pdo->query("SELECT id_dispositivo, modelo FROM dispositivos ORD
 
   <!-- Sidebar -->
   <div class="sidebar">
-    <h2>Admin Panel</h2>
+    <h2>Administración</h2>
     <div class="menu">
       <!-- <a href="VistaAdm.php">Catálogo</a>-->
       <a href="adm/VistaAdmUsuario.php">👤 Usuarios</a>
@@ -39,35 +39,16 @@ $dispositivos = $pdo->query("SELECT id_dispositivo, modelo FROM dispositivos ORD
       <a href="adm/VistaAdmPedidos.php">📦 Pedidos</a>
       <a href="adm/VistaAdmVentas.php">📊 Reporte de Ventas</a>
       <a href="adm/VistaAdmInventario.php">📋 Inventario</a>
-      <a href="index.php">Vista de Usuario</a>
+      <a href="index.php">Vista de usuario</a>
     </div>
   </div>
 
   <!-- Main -->
   <div class="main-content">
     <div class="topbar">
-      <h3>Panel de Administración</h3>
+      <h3>Panel de administración</h3>
       <div class="user"><span>Administrador</span></div>
     </div>
-
-    <!-- ===== Catálogo (placeholder con tu estilo) ===== -->
-    <section id="catalogo" class="active">
-      <h1>Catálogo de Productos</h1>
-      <div class="prod-sidebar">
-        <button onclick="mostrarCatalogoCategoria('fundas')">Fundas</button>
-        <button onclick="mostrarCatalogoCategoria('micas')">Micas</button>
-        <button onclick="mostrarCatalogoCategoria('audifonos')">Audífonos</button>
-        <button onclick="mostrarCatalogoCategoria('cargadores')">Cargadores</button>
-        <button onclick="mostrarCatalogoCategoria('soportes')">Soportes</button>
-        <button onclick="mostrarCatalogoCategoria('memoria')">Memoria</button>
-      </div>
-      <div id="contenido-catalogo">
-        <p>Selecciona una categoría para ver los productos disponibles.</p>
-      </div>
-    </section>
-
-        
-
   </div><!-- /main-content -->
 
 <script>
