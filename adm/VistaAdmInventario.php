@@ -120,6 +120,7 @@ if (!empty($_SESSION['flash_ok'])) {
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Panel de Administrador - Negocio de Fundas</title>
 <link rel="stylesheet" href="estilos.css">
+<link rel="icon" href="/../imagenes/LogoLionCell.ico">
 <style>
   .qty-wrap{display:flex;gap:6px;align-items:center}
   .qty-wrap input[type="number"]{width:100px;padding:6px}
@@ -135,6 +136,7 @@ if (!empty($_SESSION['flash_ok'])) {
        <!-- <a href="VistaAdm.php">Catálogo</a>-->
       <a href="VistaAdmUsuario.php">👤 Usuarios</a>
       <a href="VistaAdmProducto.php">🛍 Productos</a>
+      <a href="VistaAdmPedidos.php">📦 Pedidos</a>
       <a href="VistaAdmVentas.php">📊 Reporte de Ventas</a>
       <a href="VistaAdmInventario.php" class="active">📋 Inventario</a>
       <a href="../index.php">Vista de Usuario</a>

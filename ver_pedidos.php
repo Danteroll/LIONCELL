@@ -42,7 +42,7 @@ table{width:100%;border-collapse:collapse;background:#fff;box-shadow:var(--shado
 th,td{padding:12px;text-align:left;border-bottom:1px solid #ddd;}
 th{background:#f0f0f0;}
 .estado{padding:4px 10px;border-radius:8px;font-weight:bold;color:#fff;}
-.estado.reservado{background:#2563eb;}
+.estado.en_proceso{background:#2563eb;}
 .estado.vendido{background:#16a34a;}
 .estado.cancelado{background:#dc2626;}
 .estado.expirado{background:#6b7280;}

@@ -127,6 +127,7 @@ try {
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Admin – Usuarios</title>
 <link rel="stylesheet" href="estilos.css">
+<link rel="icon" href="/../imagenes/LogoLionCell.ico">
 </head>
 <body>
 
@@ -137,6 +138,7 @@ try {
        <!-- <a href="VistaAdm.php">Catálogo</a>-->
       <a href="VistaAdmUsuario.php">👤 Usuarios</a>
       <a href="VistaAdmProducto.php">🛍 Productos</a>
+      <a href="VistaAdmPedidos.php">📦 Pedidos</a>
       <a href="VistaAdmVentas.php">📊 Reporte de Ventas</a>
       <a href="VistaAdmInventario.php">📋 Inventario</a>
       <a href="../index.php">Vista de Usuario</a>

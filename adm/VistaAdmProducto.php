@@ -162,6 +162,7 @@ $productosListado = $st->fetchAll();
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Panel de Administrador - Negocio de Fundas</title>
 <link rel="stylesheet" href="estilos.css">
+<link rel="icon" href="/../imagenes/LogoLionCell.ico">
 </head>
 <body>
 
@@ -172,6 +173,7 @@ $productosListado = $st->fetchAll();
        <!-- <a href="VistaAdm.php">Catálogo</a>-->
       <a href="VistaAdmUsuario.php">👤 Usuarios</a>
       <a href="VistaAdmProducto.php" class="active">🛍 Productos</a>
+      <a href="VistaAdmPedidos.php">📦 Pedidos</a>
       <a href="VistaAdmVentas.php">📊 Reporte de Ventas</a>
       <a href="VistaAdmInventario.php">📋 Inventario</a>
       <a href="../index.php">Vista de Usuario</a>
