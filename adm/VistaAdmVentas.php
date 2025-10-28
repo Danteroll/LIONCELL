@@ -1,45 +1,110 @@
-<?php
-// ======= Autorización básica de admin =======
+<?php 
 session_start();
 if (empty($_SESSION['usuario']) || (int)($_SESSION['role_id'] ?? 0) !== 1) {
-    header("Location: ../formulario.php");
-    exit;
+  header("Location: ../formulario.php");
+  exit;
 }
 
-// ======= Conexión PDO =======
 require_once __DIR__ . '/../inc/init.php';
 function h($s){ return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
 
-$action = $_POST['action'] ?? '';
 $msg = '';
 $err = '';
+$action = $_POST['action'] ?? '';
 
 try {
-    // --- PEDIDOS: marcar vendido o cancelar ---
-    if ($action === 'mark_sold') {
-        $id_pedido = (int)($_POST['id_pedido'] ?? 0);
-        if ($id_pedido > 0) {
-            $pdo->prepare("UPDATE pedidos SET estado = 'vendido' WHERE id_pedido = ?")->execute([$id_pedido]);
-            $msg = 'Pedido marcado como vendido.';
-        }
+  // === REGISTRAR VENTA LOCAL (PUNTO DE VENTA) ===
+  if ($action === 'registrar_venta') {
+    $id_producto = (int)($_POST['id_producto'] ?? 0);
+    $cantidad    = (int)($_POST['cantidad'] ?? 0);
+
+    if ($id_producto <= 0 || $cantidad <= 0) {
+      throw new Exception("Datos de venta inválidos.");
     }
 
-    if ($action === 'cancel_pedido') {
-        $id_pedido = (int)($_POST['id_pedido'] ?? 0);
-        if ($id_pedido > 0) {
-            $pdo->prepare("UPDATE pedidos SET estado = 'cancelado' WHERE id_pedido = ?")->execute([$id_pedido]);
-            $msg = 'Pedido cancelado correctamente.';
-        }
-    }
+    // Obtener precio y costo
+    $stmt = $pdo->prepare("SELECT nombre, precio, costo FROM productos WHERE id_producto = ?");
+    $stmt->execute([$id_producto]);
+    $prod = $stmt->fetch(PDO::FETCH_ASSOC);
+    if (!$prod) throw new Exception("Producto no encontrado.");
 
-    // --- Obtener todos los pedidos ---
-    $sql = "SELECT id_pedido, nombre_cliente, telefono, correo, total, estado, fecha_pedido
-            FROM pedidos
-            ORDER BY fecha_pedido DESC";
-    $pedidos = $pdo->query($sql)->fetchAll();
+    $precio = (float)$prod['precio'];
+    $costo  = (float)($prod['costo'] ?? 0);
+    $subtotal = $precio * $cantidad;
+    $ganancia = ($precio - $costo) * $cantidad;
+
+    // === Registrar venta general (id_pedido NULL para local) ===
+    $pdo->prepare("INSERT INTO ventas (id_pedido, total) VALUES (NULL, ?)")->execute([$subtotal]);
+    $id_venta = $pdo->lastInsertId();
+
+    // === Insertar detalle ===
+    $pdo->prepare("
+      INSERT INTO venta_items (id_venta, id_producto, cantidad, precio_unit, subtotal)
+      VALUES (?, ?, ?, ?, ?)
+    ")->execute([$id_venta, $id_producto, $cantidad, $precio, $subtotal]);
+
+    // === Actualizar inventario ===
+    $pdo->prepare("
+      UPDATE inventario
+      SET stock_actual = GREATEST(stock_actual - ?, 0)
+      WHERE id_producto = ?
+    ")->execute([$cantidad, $id_producto]);
+
+    $msg = "✅ Venta local registrada correctamente (ID Venta #$id_venta).";
+  }
+
+  // === CONSULTAR VENTAS POR PEDIDOS (en línea) ===
+
+  $ventasPedidos = $pdo->query("
+  SELECT 
+    p.id_pedido,
+    p.nombre_cliente,
+    p.total,
+    p.fecha_pedido,
+    SUM(pi.cantidad * (pr.precio - COALESCE(pr.costo, 0))) AS ganancia
+  FROM pedidos p
+  LEFT JOIN pedido_items pi ON pi.id_pedido = p.id_pedido
+  LEFT JOIN productos pr ON pr.id_producto = pi.id_producto
+  WHERE p.estado = 'vendido'
+  GROUP BY p.id_pedido
+  ORDER BY p.fecha_pedido DESC
+")->fetchAll();
+
+  // === CONSULTAR VENTAS LOCALES (punto de venta) ===
+  $ventasLocales = $pdo->query("
+    SELECT v.id_venta, v.total, v.fecha_venta, 
+           SUM(vi.cantidad*(p.precio - COALESCE(p.costo,0))) AS ganancia,
+           GROUP_CONCAT(CONCAT(p.nombre, ' × ', vi.cantidad) SEPARATOR ', ') AS productos
+    FROM ventas v
+    LEFT JOIN venta_items vi ON vi.id_venta = v.id_venta
+    LEFT JOIN productos p ON p.id_producto = vi.id_producto
+    WHERE v.id_pedido IS NULL
+    GROUP BY v.id_venta
+    ORDER BY v.fecha_venta DESC
+  ")->fetchAll();
+
+  // === GANANCIAS TOTALES POR FECHA ===
+  $resumenFechas = $pdo->query("
+    SELECT DATE(v.fecha_venta) AS fecha,
+           SUM(v.total) AS total_vendido,
+           SUM(vi.cantidad*(p.precio - COALESCE(p.costo,0))) AS ganancia
+    FROM ventas v
+    LEFT JOIN venta_items vi ON vi.id_venta = v.id_venta
+    LEFT JOIN productos p ON p.id_producto = vi.id_producto
+    GROUP BY DATE(v.fecha_venta)
+    ORDER BY fecha DESC
+  ")->fetchAll();
+
+  // === PRODUCTOS DISPONIBLES PARA EL PUNTO DE VENTA ===
+  $productos = $pdo->query("
+    SELECT p.id_producto, p.nombre, p.precio, COALESCE(i.stock_actual,0) AS stock
+    FROM productos p
+    LEFT JOIN inventario i ON i.id_producto = p.id_producto
+    ORDER BY p.nombre ASC
+  ")->fetchAll();
 
 } catch (Throwable $e) {
-    $err = $e->getMessage();
+  $err = $e->getMessage();
 }
 ?>
 <!DOCTYPE html>
@@ -47,18 +112,31 @@ try {
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>📦 Pedidos - Panel de Administración</title>
+<title>📊 Reporte de Ventas - Lion Cell</title>
 <link rel="stylesheet" href="estilos.css">
+<link rel="icon" href="/../imagenes/LogoLionCell.ico">
+
+<!-- Select2 buscador -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
 <style>
-.estado{
-  padding:4px 10px;border-radius:8px;font-weight:bold;color:#fff;
-}
-.estado.reservado{background:#2563eb;}
-.estado.vendido{background:#16a34a;}
-.estado.cancelado{background:#dc2626;}
-.table-admin{width:100%;border-collapse:collapse;margin-top:20px;background:#fff;}
+h2{margin-top:0;}
+.tabs{display:flex;gap:10px;margin-bottom:20px;}
+.tab-btn{padding:10px 20px;border:none;border-radius:8px;cursor:pointer;background:#ddd;color:#333;font-weight:600;}
+.tab-btn.active{background:#2563eb;color:#fff;}
+.section-content{display:none;}
+.section-content.active{display:block;}
+.table-admin{width:100%;border-collapse:collapse;background:#fff;margin-top:10px;}
 .table-admin th,.table-admin td{padding:10px;border-bottom:1px solid #ddd;text-align:left;}
 .table-admin th{background:#f2f2f2;}
+.success{background:#ecfffa;border:1px solid #a7f3d0;color:#065f46;padding:10px;margin-bottom:10px;}
+.error{background:#fff5f5;border:1px solid #fecaca;color:#991b1b;padding:10px;margin-bottom:10px;}
+input,select{padding:8px;border:1px solid #ccc;border-radius:6px;}
+button{padding:8px 14px;border:none;border-radius:6px;background:#2563eb;color:#fff;cursor:pointer;}
+button:hover{background:#1e3a8a;}
+.select2-container .select2-selection--single{height:38px;}
 </style>
 </head>
 <body>
@@ -68,7 +146,8 @@ try {
   <div class="menu">
     <a href="VistaAdmUsuario.php">👤 Usuarios</a>
     <a href="VistaAdmProducto.php">🛍 Productos</a>
-    <a href="VistaAdmVentas.php">📊 Reporte de Ventas</a>
+    <a href="VistaAdmPedidos.php">📦 Pedidos</a>
+    <a href="VistaAdmVentas.php" class="active">📊 Reporte de Ventas</a>
     <a href="VistaAdmInventario.php">📋 Inventario</a>
     <a href="../index.php">Vista de Usuario</a>
   </div>
@@ -76,65 +155,123 @@ try {
 
 <div class="main-content">
   <div class="topbar">
-    <h3>Gestión de Pedidos</h3>
+    <h3>Reporte de Ventas</h3>
     <div class="user"><span>Administrador</span></div>
   </div>
 
-  <?php if($msg): ?>
-    <div style="background:#ecfffa;border:1px solid #a7f3d0;color:#065f46;padding:10px;margin-bottom:10px;"><?=h($msg)?></div>
-  <?php endif; ?>
-  <?php if($err): ?>
-    <div style="background:#fff5f5;border:1px solid #fecaca;color:#991b1b;padding:10px;margin-bottom:10px;">Error: <?=h($err)?></div>
-  <?php endif; ?>
+  <?php if($msg): ?><div class="success"><?=h($msg)?></div><?php endif; ?>
+  <?php if($err): ?><div class="error"><?=h($err)?></div><?php endif; ?>
 
-  <?php if (empty($pedidos)): ?>
-    <p>No hay pedidos registrados.</p>
-  <?php else: ?>
-    <table class="table-admin">
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Cliente</th>
-          <th>Teléfono</th>
-          <th>Correo</th>
-          <th>Total</th>
-          <th>Estado</th>
-          <th>Fecha</th>
-          <th>Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        <?php foreach ($pedidos as $p): ?>
-        <tr>
-          <td><?= (int)$p['id_pedido'] ?></td>
-          <td><?= h($p['nombre_cliente']) ?></td>
-          <td><?= h($p['telefono']) ?></td>
-          <td><?= h($p['correo']) ?></td>
-          <td>$<?= number_format((float)$p['total'], 2) ?></td>
-          <td><span class="estado <?= h($p['estado']) ?>"><?= ucfirst(h($p['estado'])) ?></span></td>
-          <td><?= date('d/m/Y H:i', strtotime($p['fecha_pedido'])) ?></td>
-          <td>
-            <?php if ($p['estado'] !== 'vendido'): ?>
-              <form method="post" style="display:inline" onsubmit="return confirm('¿Marcar como vendido este pedido?')">
-                <input type="hidden" name="action" value="mark_sold">
-                <input type="hidden" name="id_pedido" value="<?= (int)$p['id_pedido'] ?>">
-                <button class="btn" style="background:#16a34a;color:white;">Vendido</button>
-              </form>
-            <?php endif; ?>
+  <div class="tabs">
+    <button class="tab-btn active" onclick="showTab('pedidos')">🧾 Ventas por pedidos</button>
+    <button class="tab-btn" onclick="showTab('local')">🏪 Ventas punto de venta</button>
+    <button class="tab-btn" onclick="showTab('resumen')">📊 Ganancia total</button>
+  </div>
 
-            <?php if ($p['estado'] !== 'cancelado'): ?>
-              <form method="post" style="display:inline" onsubmit="return confirm('¿Cancelar este pedido?')">
-                <input type="hidden" name="action" value="cancel_pedido">
-                <input type="hidden" name="id_pedido" value="<?= (int)$p['id_pedido'] ?>">
-                <button class="btn" style="background:#ef4444;color:white;">Cancelar</button>
-              </form>
-            <?php endif; ?>
-          </td>
-        </tr>
+  <!-- === SECCIÓN 1: VENTAS DE PEDIDOS === -->
+  <div id="pedidos" class="section-content active">
+    <h2>Ventas por pedidos</h2>
+    <?php if(empty($ventasPedidos)): ?>
+      <p>No hay pedidos vendidos registrados.</p>
+    <?php else: ?>
+      <table class="table-admin">
+  <thead>
+    <tr>
+      <th>ID Pedido</th>
+      <th>Cliente</th>
+      <th>Total</th>
+      <th>Ganancia</th>
+      <th>Fecha</th>
+    </tr>
+  </thead>
+  <tbody>
+    <?php foreach($ventasPedidos as $v): ?>
+      <tr>
+        <td><?= (int)$v['id_pedido'] ?></td>
+        <td><?= h($v['nombre_cliente']) ?></td>
+        <td>$<?= number_format($v['total'], 2) ?></td>
+        <td style="color:#16a34a;">+$<?= number_format($v['ganancia'] ?? 0, 2) ?></td>
+        <td><?= date('d/m/Y H:i', strtotime($v['fecha_pedido'])) ?></td>
+      </tr>
+    <?php endforeach; ?>
+  </tbody>
+</table>
+
+    <?php endif; ?>
+  </div>
+
+  <!-- === SECCIÓN 2: PUNTO DE VENTA === -->
+  <div id="local" class="section-content">
+    <h2>Ventas locales</h2>
+    <form method="post" style="margin-bottom:15px;">
+      <input type="hidden" name="action" value="registrar_venta">
+      <label>Producto:</label>
+      <select name="id_producto" id="id_producto" required style="width:300px;">
+        <option value="">Seleccionar producto</option>
+        <?php foreach($productos as $p): ?>
+          <option value="<?=$p['id_producto']?>"><?=h($p['nombre'])?> — $<?=number_format($p['precio'],2)?> (Stock: <?=$p['stock']?>)</option>
         <?php endforeach; ?>
-      </tbody>
-    </table>
-  <?php endif; ?>
+      </select>
+      <label>Cantidad:</label>
+      <input type="number" name="cantidad" min="1" value="1" required>
+      <button type="submit">Registrar venta</button>
+    </form>
+
+    <?php if(empty($ventasLocales)): ?>
+      <p>No hay ventas locales registradas.</p>
+    <?php else: ?>
+      <table class="table-admin">
+        <thead><tr><th>ID Venta</th><th>Productos</th><th>Total</th><th>Ganancia</th><th>Fecha</th></tr></thead>
+        <tbody>
+          <?php foreach($ventasLocales as $v): ?>
+            <tr>
+              <td><?=$v['id_venta']?></td>
+              <td><?=h($v['productos'])?></td>
+              <td>$<?=number_format($v['total'],2)?></td>
+              <td style="color:#16a34a;">+$<?=number_format($v['ganancia'],2)?></td>
+              <td><?=date('d/m/Y H:i',strtotime($v['fecha_venta']))?></td>
+            </tr>
+          <?php endforeach; ?>
+        </tbody>
+      </table>
+    <?php endif; ?>
+  </div>
+
+  <!-- === SECCIÓN 3: RESUMEN GANANCIAS === -->
+  <div id="resumen" class="section-content">
+    <h2>Ganancia total por fecha</h2>
+    <?php if(empty($resumenFechas)): ?>
+      <p>No hay registros de ventas aún.</p>
+    <?php else: ?>
+      <table class="table-admin">
+        <thead><tr><th>Fecha</th><th>Total Vendido</th><th>Ganancia</th></tr></thead>
+        <tbody>
+          <?php foreach($resumenFechas as $r): ?>
+            <tr>
+              <td><?=date('d/m/Y',strtotime($r['fecha']))?></td>
+              <td>$<?=number_format($r['total_vendido'],2)?></td>
+              <td style="color:#16a34a;">+$<?=number_format($r['ganancia'],2)?></td>
+            </tr>
+          <?php endforeach; ?>
+        </tbody>
+      </table>
+    <?php endif; ?>
+  </div>
 </div>
+
+<script>
+function showTab(id){
+  document.querySelectorAll('.section-content').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.target.classList.add('active');
+}
+$(document).ready(function() {
+  $('#id_producto').select2({
+    placeholder: "Escribe para buscar producto...",
+    allowClear: true
+  });
+});
+</script>
 </body>
 </html>

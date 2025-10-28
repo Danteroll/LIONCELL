@@ -17,43 +17,32 @@ if (empty($carrito)) {
     $pdo->beginTransaction();
 
     // Datos del cliente (desde sesión)
-   $id_cliente     = $_SESSION['usuario'] ?? null;
-$nombre_cliente = trim(($_SESSION['nombre'] ?? '') . ' ' . ($_SESSION['app'] ?? ''));
-$correo         = $_SESSION['correo'] ?? '';
-$telefono       = $_SESSION['telefono'] ?? '';
+    $id_cliente     = $_SESSION['usuario'] ?? null;
+    $nombre_cliente = trim(($_SESSION['nombre'] ?? '') . ' ' . ($_SESSION['app'] ?? ''));
+    $correo         = $_SESSION['correo'] ?? '';
+    $telefono       = $_SESSION['telefono'] ?? '';
 
-
-    // Crear pedido
+    // Crear pedido en estado "en_proceso"
     $stmt = $pdo->prepare("INSERT INTO pedidos (nombre_cliente, correo, telefono, estado, total)
-                           VALUES (?, ?, ?, 'reservado', 0)");
+                           VALUES (?, ?, ?, 'en_proceso', 0)");
     $stmt->execute([$nombre_cliente, $correo, $telefono]);
     $id_pedido = $pdo->lastInsertId();
 
     $total_pedido = 0;
 
-    // Preparar sentencias
+    // Insertar cada producto del carrito
     $stmtItem = $pdo->prepare("
       INSERT INTO pedido_items (id_pedido, id_producto, cantidad, precio_unit, subtotal)
       VALUES (?, ?, ?, ?, ?)
     ");
-    $stmtInv = $pdo->prepare("
-      UPDATE inventario
-      SET stock_actual = stock_actual - ?
-      WHERE id_producto = ? AND stock_actual >= ?
-    ");
 
     foreach ($carrito as $id_producto => $item) {
-      $cantidad = (int)$item['cantidad'];
-      $precio_unit = (float)$item['precio'];
-      $subtotal = $cantidad * $precio_unit;
+      $cantidad     = (int)$item['cantidad'];
+      $precio_unit  = (float)$item['precio'];
+      $subtotal     = $cantidad * $precio_unit;
       $total_pedido += $subtotal;
 
       $stmtItem->execute([$id_pedido, $id_producto, $cantidad, $precio_unit, $subtotal]);
-      $stmtInv->execute([$cantidad, $id_producto, $cantidad]);
-
-      if ($stmtInv->rowCount() === 0) {
-        throw new Exception("Stock insuficiente para el producto ID $id_producto.");
-      }
     }
 
     // Actualizar total
@@ -63,8 +52,7 @@ $telefono       = $_SESSION['telefono'] ?? '';
     $pdo->commit();
 
     unset($_SESSION['carrito']);
-    $msg = "✅ Tu pedido fue registrado correctamente.<br><br>
-            Se apartaron tus productos del inventario y podrás confirmar el pago en tienda o con un administrador.";
+    $msg = "✅ Tu pedido fue registrado correctamente.";
     $ok = true;
 
   } catch (Exception $e) {

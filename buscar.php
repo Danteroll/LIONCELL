@@ -26,9 +26,8 @@ $offset  = ($page - 1) * $perPage;
 $catMap = [
   'fundas'      => 1,
   'micas'       => 2,
-  'cargadores'  => 3,
-  'audifonos'   => 4,
-  'memorias'    => 5,
+  'accesorios'  => 3,
+
 ];
 
 // Normaliza seleccionadas a IDs válidos
