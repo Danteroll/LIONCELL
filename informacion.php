@@ -10,7 +10,7 @@
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, Helvetica, sans-serif; }
     body { background: #fff; color: #3a3a3a; line-height: 1.6; }
 
-    header { background: linear-gradient(90deg, #0063f7, #00afdb); color: white; padding: 15px 20px; display: flex; align-items: center; justify-content: space-between; }
+    header { background: linear-gradient(90deg, #1e3a8a 0%, #2563eb 45%, #e6c065 100%); color: white; padding: 15px 20px; display: flex; align-items: center; justify-content: space-between; }
     header h1 { font-size: 1.5rem; }
     header a { color: white; text-decoration: none; font-size: 1rem; background-color: #13005e00; padding: 8px 15px; border-radius: 5px; }
 
@@ -50,7 +50,6 @@
       <p>Lion Cell nació en 2020 con el objetivo de ofrecer accesorios de calidad para celulares en México. Nos especializamos en fundas, cargadores, micas, audífonos y más, buscando siempre la satisfacción de nuestros clientes.</p>
     </section>
 
-    <!-- Nuevo apartado agregado -->
     <section id="acerca-de-nosotros">
       <h2>Acerca de nosotros</h2>
       <p>Este sitio web es una iniciativa desarrollada por un equipo de trabajo enfocado en ofrecer una solución digital para una base de datos. Nuestro principal objetivo es proporcionar una experiencia de usuario clara y eficiente, así como también para el administrador. Agradecemos tu visita.</p>
@@ -71,7 +70,7 @@
   </main>
 
   <footer class="footer">
-    <p>© 2025 Lion Cell. Todos los derechos reservados.</p>
+    <p style="color:white;">© 2025 Lion Cell. Todos los derechos reservados.</p>
   </footer>
 </body>
-</html>
+</html>  

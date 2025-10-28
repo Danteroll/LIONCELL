@@ -131,7 +131,7 @@ if (!empty($_SESSION['flash_ok'])) {
 
   <!-- Sidebar -->
   <div class="sidebar">
-    <h2>Admin Panel</h2>
+    <h2>Administración</h2>
     <div class="menu">
        <!-- <a href="VistaAdm.php">Catálogo</a>-->
       <a href="VistaAdmUsuario.php">👤 Usuarios</a>
@@ -139,20 +139,20 @@ if (!empty($_SESSION['flash_ok'])) {
       <a href="VistaAdmPedidos.php">📦 Pedidos</a>
       <a href="VistaAdmVentas.php">📊 Reporte de Ventas</a>
       <a href="VistaAdmInventario.php" class="active">📋 Inventario</a>
-      <a href="../index.php">Vista de Usuario</a>
+      <a href="../index.php">Vista de usuario</a>
     </div>
   </div>
 
   <!-- Main -->
   <div class="main-content">
     <div class="topbar">
-      <h3>Panel de Administración</h3>
+      <h3>Inventario de productos</h3>
       <div class="user"><span>Administrador</span></div>
     </div>
 
     <!-- ===== Inventario (desde BD) ===== -->
     <section id="inventario" class="active">
-      <h1>Inventario de Productos</h1>
+      <h1> </h1>
 
       <div class="prod-sidebar">
         <form method="get" action="VistaAdmInventario.php#inventario" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
