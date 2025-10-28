@@ -37,33 +37,128 @@ function h($s){ return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="icon" href="imagenes/LogoLionCell.ico">
 <style>
-:root{--brand-1:#1e3a8a;--brand-2:#2563eb;--brand-3:#e6c065;--container:1200px;--shadow:0 6px 24px rgba(0,0,0,.08);}
-body{font-family:Arial,Helvetica,sans-serif;background:#f7f7f7;margin:0;padding:0;}
-header{background:linear-gradient(90deg,var(--brand-1),var(--brand-2),var(--brand-3));color:#fff;padding:15px 20px;display:flex;align-items:center;gap:20px;}
-header img{width:60px;height:60px;border-radius:8px;}
-main{max-width:var(--container);margin:20px auto;padding:0 16px;}
-h2{margin-top:0;}
-table{width:100%;border-collapse:collapse;background:#fff;box-shadow:var(--shadow);}
-th,td{padding:12px;text-align:left;border-bottom:1px solid #ddd;}
-th{background:#f0f0f0;}
-input[type=number]{width:60px;padding:6px;border-radius:6px;border:1px solid #ccc;}
-button{padding:6px 12px;border:none;border-radius:6px;background:#2563eb;color:#fff;cursor:pointer;}
-button:hover{background:#1e3a8a;}
-.total-row td{font-weight:800;text-align:right;}
-a.back{display:inline-block;margin-top:12px;color:#2563eb;text-decoration:none;}
-a.back:hover{text-decoration:underline;}
-.btn-pedir{display:inline-block;margin-top:20px;padding:10px 20px;border:none;border-radius:8px;background:#22c55e;color:#fff;cursor:pointer;}
-.btn-pedir:hover{background:#16a34a;}
+:root {
+  --brand-1:#1e3a8a;
+  --brand-2:#2563eb;
+  --brand-3:#e6c065;
+  --container:1200px;
+  --shadow:0 6px 24px rgba(0,0,0,.08);
+}
+body {
+  font-family:Arial,Helvetica,sans-serif;
+  background:#f7f7f7;
+  margin:0;
+  padding:0;
+}
+header {
+  background:linear-gradient(90deg,var(--brand-1),var(--brand-2),var(--brand-3));
+  color:#fff;
+  padding:15px 20px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+.header-left {
+  display:flex;
+  align-items:center;
+  gap:15px;
+}
+header img {
+  width:60px;
+  height:60px;
+  border-radius:8px;
+}
+header h1 {
+  margin:0;
+  font-size:1.4rem;
+}
+
+/* 🔵 Botón azul con texto blanco */
+.btn-top-right {
+  background:#2563eb;           /* Azul brillante */
+  color:#fff;                   /* Texto blanco */
+  padding:8px 18px;
+  text-decoration:none;
+  border-radius:8px;
+  font-weight:500;
+  font-size:16px;
+  box-shadow:0 2px 6px rgba(0,0,0,0.2);
+  transition:background 0.2s ease, transform 0.1s ease;
+}
+.btn-top-right:hover {
+  background:#1e3a8a;           /* Azul más oscuro al pasar el mouse */
+  transform:scale(1.03);        /* Pequeño aumento */
+}
+
+main {
+  max-width:var(--container);
+  margin:20px auto;
+  padding:0 16px;
+}
+h2 {margin-top:0;}
+table {
+  width:100%;
+  border-collapse:collapse;
+  background:#fff;
+  box-shadow:var(--shadow);
+}
+th,td {
+  padding:12px;
+  text-align:left;
+  border-bottom:1px solid #ddd;
+}
+th {background:#f0f0f0;}
+input[type=number] {
+  width:60px;
+  padding:6px;
+  border-radius:6px;
+  border:1px solid #ccc;
+}
+button {
+  padding:6px 12px;
+  border:none;
+  border-radius:6px;
+  background:#2563eb;
+  color:#fff;
+  cursor:pointer;
+}
+button:hover {background:#1e3a8a;}
+.total-row td {
+  font-weight:800;
+  text-align:right;
+}
+a.back {
+  display:inline-block;
+  margin-top:12px;
+  color:#2563eb;
+  text-decoration:none;
+}
+a.back:hover {text-decoration:underline;}
+.btn-pedir {
+  display:inline-block;
+  margin-top:20px;
+  padding:10px 20px;
+  border:none;
+  border-radius:8px;
+  background:#22c55e;
+  color:#fff;
+  cursor:pointer;
+}
+.btn-pedir:hover {background:#16a34a;}
 </style>
 </head>
 <body>
 <header>
-<img src="imagenes/LogoLionCell.png" alt="Lion Cell"> <h1>Tu carrito de compras</h1>
+  <div class="header-left">
+    <img src="imagenes/LogoLionCell.png" alt="Lion Cell">
+    <h1>Tu carrito de compras</h1>
+  </div>
+  <a href="index.php" class="btn-top-right">← Volver al inicio</a>
 </header>
+
 <main>
 <?php if(empty($carrito)): ?>
   <p>No tienes productos en el carrito.</p>
-  <a href="index.php" class="back">← Volver a productos</a>
   <a href="ver_pedidos.php" class="btn">📦 Ver mis pedidos</a>
 <?php else: ?>
 <form method="post">

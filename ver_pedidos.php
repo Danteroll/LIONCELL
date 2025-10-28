@@ -11,7 +11,6 @@ $nombreCliente = $_SESSION['nombre'] ?? '';
 $correo        = $_SESSION['correo'] ?? '';
 $telefono      = $_SESSION['telefono'] ?? '';
 
-// Traer todos los pedidos del cliente (según correo o nombre)
 $sql = "SELECT id_pedido, nombre_cliente, telefono, correo, total, estado, fecha_pedido
         FROM pedidos
         WHERE correo = ?
@@ -27,39 +26,123 @@ $pedidos = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <meta charset="UTF-8">
 <title>📦 Mis pedidos - Lion Cell</title>
 <link rel="icon" href="imagenes/LogoLionCell.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
-:root{
-  --brand-1:#1e3a8a;--brand-2:#2563eb;--brand-3:#e6c065;
+:root {
+  --brand-1:#1e3a8a;
+  --brand-2:#2563eb;
+  --brand-3:#e6c065;
+  --container:1200px;
   --shadow:0 6px 24px rgba(0,0,0,.08);
 }
-body{font-family:Arial,Helvetica,sans-serif;background:#f7f7f7;margin:0;padding:0;}
-header{background:linear-gradient(90deg,var(--brand-1),var(--brand-2),var(--brand-3));
-  color:#fff;padding:15px 20px;display:flex;align-items:center;gap:20px;}
-header img{width:60px;height:60px;border-radius:8px;}
-main{max-width:1000px;margin:20px auto;padding:0 20px;}
-h1{color:#1e3a8a;text-align:center;}
-table{width:100%;border-collapse:collapse;background:#fff;box-shadow:var(--shadow);}
-th,td{padding:12px;text-align:left;border-bottom:1px solid #ddd;}
-th{background:#f0f0f0;}
-.estado{padding:4px 10px;border-radius:8px;font-weight:bold;color:#fff;}
-.estado.en_proceso{background:#2563eb;}
-.estado.vendido{background:#16a34a;}
-.estado.cancelado{background:#dc2626;}
-.estado.expirado{background:#6b7280;}
-a.volver{display:inline-block;margin-top:20px;text-decoration:none;color:#2563eb;}
-a.volver:hover{text-decoration:underline;}
-.btn-detalles{padding:6px 12px;border:none;border-radius:6px;background:#1e3a8a;color:white;cursor:pointer;}
+body {
+  font-family:Arial, Helvetica, sans-serif;
+  background:#f7f7f7;
+  margin:0;
+  padding:0;
+}
+
+/* 🔹 Encabezado */
+header {
+  background:linear-gradient(90deg, var(--brand-1), var(--brand-2), var(--brand-3));
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:15px 20px;
+}
+.header-left {
+  display:flex;
+  align-items:center;
+  gap:15px;
+}
+header img {
+  width:60px;
+  height:60px;
+  border-radius:8px;
+}
+header h1 {
+  color:#fff;
+  margin:0;
+  font-size:1.6rem;
+  font-weight:bold;
+}
+
+/* 🔵 Botón azul arriba a la derecha */
+.btn-top-right {
+  background:#2563eb;
+  color:#fff;
+  padding:8px 18px;
+  text-decoration:none;
+  border-radius:8px;
+  font-weight:500;
+  font-size:16px;
+  box-shadow:0 2px 6px rgba(0,0,0,0.2);
+  transition:background 0.2s ease, transform 0.1s ease;
+}
+.btn-top-right:hover {
+  background:#1e3a8a;
+  transform:scale(1.03);
+}
+
+/* 🔹 Contenido principal */
+main {
+  max-width:var(--container);
+  margin:20px auto;
+  padding:0 16px;
+  background:#fff;
+  box-shadow:var(--shadow);
+  border-radius:10px;
+}
+table {
+  width:100%;
+  border-collapse:collapse;
+  margin-top:10px;
+}
+th, td {
+  padding:12px;
+  text-align:left;
+  border-bottom:1px solid #ddd;
+}
+th {
+  background:#f0f0f0;
+}
+.estado {
+  padding:5px 10px;
+  border-radius:5px;
+  font-weight:bold;
+  color:#fff;
+}
+.estado.en_proceso { background:#2563eb; }
+.estado.vendido { background:#16a34a; }
+.estado.cancelado { background:#dc2626; }
+.estado.expirado { background:#6b7280; }
+.btn-detalles {
+  background:#2563eb;
+  color:#fff;
+  border:none;
+  border-radius:6px;
+  padding:6px 12px;
+  cursor:pointer;
+}
+.btn-detalles:hover { background:#1e3a8a; }
+p {
+  font-size:1.1rem;
+}
 </style>
 </head>
+
 <body>
 <header>
-  <img src="imagenes/LogoLionCell.png" alt="Lion Cell">
-  <h1>Mis pedidos</h1>
+  <div class="header-left">
+    <img src="imagenes/LogoLionCell.png" alt="Lion Cell">
+    <h1>Mis pedidos</h1>
+  </div>
+  <a href="index.php" class="btn-top-right">← Volver a inicio</a>
 </header>
+
 <main>
 <?php if(empty($pedidos)): ?>
   <p>No tienes pedidos registrados aún.</p>
-  <a href="index.php" class="volver">← Volver a productos</a>
 <?php else: ?>
   <table>
     <thead>
@@ -89,7 +172,7 @@ a.volver:hover{text-decoration:underline;}
     </tbody>
   </table>
 <?php endif; ?>
-<a href="index.php" class="volver">← Volver a productos</a>
 </main>
+
 </body>
 </html>
