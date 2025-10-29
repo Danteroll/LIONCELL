@@ -135,7 +135,7 @@
                         name="telefono" 
                         maxlength="10" 
                         required
-                        placeholder="Teléfono" 
+                        placeholder="Teléfono *" 
                         pattern="\d{10}" 
                         title="Debe tener exactamente 10 números sin espacios ni símbolos"
                         oninput="this.value=this.value.replace(/\D/g,'').slice(0,10)">
