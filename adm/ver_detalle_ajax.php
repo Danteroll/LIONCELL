@@ -7,7 +7,11 @@ if ($id <= 0) {
 }
 
 $stmt = $pdo->prepare("
+<<<<<<< HEAD
     SELECT p.nombre AS nombre_producto, i.cantidad, i.precio_unit, i.subtotal
+=======
+    SELECT p.nombre_producto, i.cantidad, i.precio_unit, i.subtotal
+>>>>>>> e7d8beacc85b5f4b9f64d45555af6d683d113616
     FROM pedido_items i
     JOIN productos p ON i.id_producto = p.id_producto
     WHERE i.id_pedido = ?
