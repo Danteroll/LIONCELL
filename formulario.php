@@ -49,7 +49,6 @@
                     </div>
                     <input type="email" placeholder="Correo Electrónico *" name="correo" required>
                     <input type="password" placeholder="Contraseña *" name="contrasena" minlength="8" maxlength="25" pattern="^(?=\S{8,25}$)(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]+$" required title="8–25 caracteres, sin espacios, con al menos 1 letra y 1 número.">
-                    <a href="reset-pass/forgot_password.html">¿Olvidaste tu contraseña?</a>
                     <button>Entrar</button>
                 </form>
 
@@ -135,7 +134,7 @@
                         name="telefono" 
                         maxlength="10" 
                         required
-                        placeholder="Teléfono" 
+                        placeholder="Teléfono *" 
                         pattern="\d{10}" 
                         title="Debe tener exactamente 10 números sin espacios ni símbolos"
                         oninput="this.value=this.value.replace(/\D/g,'').slice(0,10)">
