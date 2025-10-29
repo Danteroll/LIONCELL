@@ -59,48 +59,63 @@ function obtenerNombre(PDO $pdo, string $tabla, string $pkCol, int $id): string 
 try {
     if ($action === 'create_product') {
     $nombre = trim($_POST['nombre'] ?? '');
-    $id_m   = (int)($_POST['id_marca'] ?? 0);
+    $id_m   = $_POST['id_marca'] ?? '';
     $id_c   = (int)($_POST['id_categoria'] ?? 0);
+    $nuevo_modelo = trim($_POST['nuevo_modelo'] ?? '');
+    $nueva_marca = trim($_POST['nueva_marca'] ?? '');
 
-    // Normaliza id_dispositivo
-    $id_d = isset($_POST['id_dispositivo']) && $_POST['id_dispositivo'] !== '' && $_POST['id_dispositivo'] !== '0'
-              ? (int)$_POST['id_dispositivo']
-              : null;
+    // === Validaciones básicas ===
+    if ($nombre === '') throw new RuntimeException('El nombre del producto es obligatorio.');
+    if ($id_c <= 0) throw new RuntimeException('Debes seleccionar una categoría.');
+    if ($nuevo_modelo === '') throw new RuntimeException('Debes escribir un modelo.');
 
-    // Si la categoría es Accesorios => id_dispositivo = NULL
-    $accId = $pdo->query("SELECT id_categoria FROM categorias WHERE LOWER(nombre)='accesorios' LIMIT 1")->fetchColumn();
-    if ($accId && (int)$id_c === (int)$accId) {
-        $id_d = null;
+    // === Crear marca si es nueva ===
+    if ($id_m === 'nueva' && $nueva_marca !== '') {
+        // Verificar si ya existe
+        $stmt = $pdo->prepare("SELECT id_marca FROM marcas WHERE LOWER(nombre)=LOWER(?) LIMIT 1");
+        $stmt->execute([$nueva_marca]);
+        $id_m = $stmt->fetchColumn();
+        if (!$id_m) {
+            $pdo->prepare("INSERT INTO marcas (nombre) VALUES (?)")->execute([$nueva_marca]);
+            $id_m = $pdo->lastInsertId();
+        }
+    } else {
+        $id_m = (int)$id_m;
+        if ($id_m <= 0) throw new RuntimeException('Debes seleccionar o crear una marca.');
     }
 
+    // === Crear modelo si no existe para esa marca ===
+    $stmt = $pdo->prepare("SELECT id_dispositivo FROM dispositivos WHERE LOWER(modelo)=LOWER(?) AND id_marca=? LIMIT 1");
+    $stmt->execute([$nuevo_modelo, $id_m]);
+    $id_d = $stmt->fetchColumn();
+    if (!$id_d) {
+        $pdo->prepare("INSERT INTO dispositivos (id_marca, modelo) VALUES (?, ?)")->execute([$id_m, $nuevo_modelo]);
+        $id_d = $pdo->lastInsertId();
+    }
+
+    // === Campos numéricos ===
     $precio = (float)($_POST['precio'] ?? 0);
     $costo  = (float)($_POST['costo'] ?? 0);
     $gasto  = (float)($_POST['gasto'] ?? 0);
 
-    // VALIDACIONES
-    if ($nombre === '') throw new RuntimeException('El nombre es obligatorio.');
-    if ($id_m <= 0) throw new RuntimeException('Debes seleccionar una marca.');
-    if ($id_c <= 0) throw new RuntimeException('Debes seleccionar una categoría.');
     if ($precio <= 0 || $costo <= 0 || $gasto <= 0)
         throw new RuntimeException('Precio, costo y gasto deben ser mayores a 0.');
 
-    // 1️⃣ Inserta producto SIN SKU aún
+    // === Inserta producto ===
     $sql = "INSERT INTO productos (nombre, id_marca, id_categoria, id_dispositivo, precio, costo, gasto)
             VALUES (?,?,?,?,?,?,?)";
     $pdo->prepare($sql)->execute([$nombre, $id_m, $id_c, $id_d, $precio, $costo, $gasto]);
 
-    // 2️⃣ Obtiene el nuevo ID
     $nuevo_id = (int)$pdo->lastInsertId();
 
-    // 3️⃣ Genera SKU automático
+    // === Generar SKU automático ===
     $marca_pref = strtoupper(substr(obtenerNombre($pdo, 'marcas', 'id_marca', $id_m), 0, 3)) ?: 'GEN';
     $cat_pref   = strtoupper(substr(obtenerNombre($pdo, 'categorias', 'id_categoria', $id_c), 0, 3)) ?: 'GEN';
     $sku = "{$cat_pref}-{$marca_pref}-" . str_pad($nuevo_id, 3, '0', STR_PAD_LEFT);
 
-    // 4️⃣ Actualiza el SKU
     $pdo->prepare("UPDATE productos SET sku=? WHERE id_producto=?")->execute([$sku, $nuevo_id]);
 
-    // 5️⃣ Guarda la imagen (si existe)
+    // === Imagen (opcional) ===
     if (!empty($_FILES['imagen']) && $_FILES['imagen']['error'] === UPLOAD_ERR_OK) {
         $ruta = guardarImagenProducto($_FILES['imagen'], $sku);
         $pdo->prepare("UPDATE productos SET imagen=? WHERE id_producto=?")->execute([$ruta, $nuevo_id]);
@@ -271,15 +286,31 @@ $productosListado = $st->fetchAll();
     <label>Nombre*</label>
     <input name="nombre" id="nombre" required>
 
-    <label>Marca*</label>
-    <select name="id_marca" id="id_marca" required>
-      <option value="">— Selecciona una marca —</option>
-      <?php foreach($marcas as $mm): ?>
-        <option value="<?=$mm['id_marca']?>" data-nombre="<?=strtoupper(substr($mm['nombre'],0,3))?>">
-          <?=h($mm['nombre'])?>
-        </option>
-      <?php endforeach; ?>
-    </select>
+<label>Marca*</label>
+<select name="id_marca" id="id_marca" required onchange="mostrarCampoNuevaMarca()">
+  <option value="">— Selecciona una marca —</option>
+  <?php foreach($marcas as $mm): ?>
+    <option value="<?=$mm['id_marca']?>" data-nombre="<?=strtoupper(substr($mm['nombre'],0,3))?>">
+      <?=h($mm['nombre'])?>
+    </option>
+  <?php endforeach; ?>
+  <option value="nueva">Agregar nueva marca</option>
+</select>
+<script>
+function mostrarCampoNuevaMarca() {
+  const sel = document.getElementById('id_marca');
+  const campo = document.getElementById('campoNuevaMarca');
+  campo.style.display = (sel.value === 'nueva') ? 'block' : 'none';
+}
+</script>
+
+<div id="campoNuevaMarca" style="display:none;margin-top:5px;">
+  <input type="text" name="nueva_marca" id="nueva_marca" placeholder="Escribe el nombre de la nueva marca">
+</div>
+
+<label>Modelo (dispositivo)*</label>
+<input type="text" name="nuevo_modelo" id="nuevo_modelo" placeholder="Escribe el modelo (ej. Galaxy A55)" required>
+
 
     <label>Categoría*</label>
     <select name="id_categoria" id="id_categoria" required>
@@ -288,14 +319,6 @@ $productosListado = $st->fetchAll();
         <option value="<?=$cc['id_categoria']?>" data-nombre="<?=strtoupper(substr($cc['nombre'],0,3))?>">
           <?=h($cc['nombre'])?>
         </option>
-      <?php endforeach; ?>
-    </select>
-
-    <label>Dispositivo (modelo)*</label>
-    <select name="id_dispositivo" id="id_dispositivo" required>
-      <option value="">— Selecciona un dispositivo —</option>
-      <?php foreach($dispositivos as $dd): ?>
-        <option value="<?=$dd['id_dispositivo']?>"><?=h($dd['modelo'])?></option>
       <?php endforeach; ?>
     </select>
 
