@@ -200,7 +200,7 @@ $productosListado = $st->fetchAll();
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>🛍 Productos - Panel de Administración</title>
+<title>Productos - Panel de Administración</title>
 <link rel="stylesheet" href="estilos.css">
 <link rel="icon" href="/../imagenes/LogoLionCell.ico">
 <style>
@@ -218,34 +218,38 @@ $productosListado = $st->fetchAll();
 </head>
 <body>
 
-  <!-- Sidebar -->
-  <div class="sidebar">
-    <h2>Administración</h2>
-    <div class="menu">
-      <a href="VistaAdmUsuario.php">👤 Usuarios</a>
-      <a href="VistaAdmProducto.php" class="active">🛍 Productos</a>
-      <a href="VistaAdmPedidos.php">📦 Pedidos</a>
-      <a href="VistaAdmVentas.php">📊 Reporte de Ventas</a>
-      <a href="VistaAdmInventario.php">📋 Inventario</a>
-      <a href="../index.php">Vista de usuario</a>
-    </div>
-  </div>
+  <!-- Contenedor general -->
+  <div class="layout">
 
-  <!-- Main -->
-  <div class="main-content">
-    <div class="topbar">
-      <h3>Gestión de productos</h3>
-      <div class="user"><span>Administrador</span></div>
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <h2>Administración</h2>
+      <div class="menu">
+        <a href="VistaAdmUsuario.php">👤 Usuarios</a>
+        <a href="VistaAdmProducto.php" class="active">🛍 Productos</a>
+        <a href="VistaAdmPedidos.php">📦 Pedidos</a>
+        <a href="VistaAdmVentas.php">📊 Reporte de Ventas</a>
+        <a href="VistaAdmInventario.php">📋 Inventario</a>
+        <a href="../index.php">Vista de usuario</a>
+      </div>
     </div>
 
-    <?php if($msg): ?>
-      <div style="background:#ecfffa;border:1px solid #a7f3d0;color:#065f46;padding:10px;margin-bottom:12px;"><?=h($msg)?></div>
-    <?php endif; ?>
-    <?php if($err): ?>
-      <div style="background:#fff5f5;border:1px solid #fecaca;color:#991b1b;padding:10px;margin-bottom:12px;">Error: <?=h($err)?></div>
-    <?php endif; ?>
+    <!-- Contenido principal -->
+    <div class="main-content">
+      <div class="topbar">
+        <h3>Gestión de productos</h3>
+        <div class="user"><span>Administrador</span></div>
+      </div>
 
-    <!-- Filtros -->
+      <!-- 🔽 Aquí va todo tu contenido tal cual -->
+      <?php if($msg): ?>
+        <div style="background:#ecfffa;border:1px solid #a7f3d0;color:#065f46;padding:10px;margin-bottom:12px;"><?=h($msg)?></div>
+      <?php endif; ?>
+      <?php if($err): ?>
+        <div style="background:#fff5f5;border:1px solid #fecaca;color:#991b1b;padding:10px;margin-bottom:12px;">Error: <?=h($err)?></div>
+      <?php endif; ?>
+
+ <!-- Filtros -->
     <div class="prod-sidebar">
       <form method="get" action="VistaAdmProducto.php#productos" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
         <input type="text" name="q" placeholder="Buscar por nombre o SKU..." value="<?=h($q)?>" style="flex:1;padding:8px;border-radius:5px;border:1px solid #ccc" />
@@ -422,8 +426,9 @@ $productosListado = $st->fetchAll();
         <?php endforeach; ?>
       <?php endif; ?>
     </div>
-  </div>
-
+  
+      ...
+    </div> <!-- /main-content -->
 <script>
 // ======= Toggle formularios =======
 function abrirFormCrear(){
@@ -483,5 +488,8 @@ function toggleNuevaMarca(){
   nm.addEventListener('input', updatePreview);
 })();
 </script>
+  </div> <!-- /layout -->
+
 </body>
+
 </html>
