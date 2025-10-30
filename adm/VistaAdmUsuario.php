@@ -74,7 +74,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 throw new RuntimeException('No puedes quitar el rol al último administrador.');
             }
 
-            $st = $pdo->prepare("UPDATE usuarios SET role_id = 0 WHERE id = ?");
+            $st = $pdo->prepare("UPDATE usuarios SET role_id = 2 WHERE id = ?");
             $st->execute([$idUsuario]);
             $msg = 'Rol de administrador quitado. Ahora es usuario estándar.';
 
