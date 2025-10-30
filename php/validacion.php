@@ -1,5 +1,4 @@
 <?php
-// php/validacion.php
 
 function esUsuarioValido($s) {
   return preg_match('/^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9]{3,30}$/u', $s);

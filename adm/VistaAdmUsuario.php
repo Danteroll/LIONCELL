@@ -1,12 +1,7 @@
 <?php
-/*************************************************
- * admin_usuarios.php  (Vista de administración: Usuarios)
- *************************************************/
-
-// 1) Cargar init.php PRIMERO para evitar warnings de ini_set con la sesión
 require_once __DIR__ . '/../inc/init.php';
 
-// 2) Autorización (usa helper si existe)
+//Autorización 
 $esAdmin = function_exists('isAdmin') ? isAdmin() : (isset($_SESSION['role_id']) && (int)$_SESSION['role_id'] === 1);
 if (empty($_SESSION['usuario']) || !$esAdmin) {
     header("Location: ../formulario.php");
@@ -15,30 +10,30 @@ if (empty($_SESSION['usuario']) || !$esAdmin) {
 
 function h($s){ return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
 
-// 3) Acciones (PRG: procesar POST y redirigir)
+// Acciones
 $msg = '';
 $err = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action       = $_POST['action'] ?? '';
     $idUsuario    = isset($_POST['id_usuario']) ? (int)$_POST['id_usuario'] : 0;
-    $miUsuarioId  = $_SESSION['usuario_id'] ?? null;   // ajusta al nombre de tu sesión (si guardas el ID)
+    $miUsuarioId  = $_SESSION['usuario_id'] ?? null;  
     $miRoleId     = $_SESSION['role_id'] ?? null;
 
     try {
-        // Contar admins actuales (para salvaguardas)
+        // Cuenta admins actuales
         $totalAdmins = (int)$pdo->query("SELECT COUNT(*) FROM usuarios WHERE role_id = 1")->fetchColumn();
 
         if ($action === 'delete_user') {
             if ($idUsuario <= 0) {
                 throw new RuntimeException('ID de usuario inválido.');
             }
-            // Evitar borrarte a ti mismo
+            // Evita borrarte a ti mismo
             if ($miUsuarioId !== null && (int)$miUsuarioId === $idUsuario) {
                 throw new RuntimeException('No puedes eliminar tu propia cuenta.');
             }
 
-            // Evitar borrar al último admin (si el usuario a borrar es admin)
+            // Evita borrar al último admin 
             $esAdminObjetivo = (int)$pdo
                 ->prepare("SELECT role_id FROM usuarios WHERE id = ?")
                 ->execute([$idUsuario]) ? (int)$pdo->query("SELECT role_id FROM usuarios WHERE id = $idUsuario")->fetchColumn() : 0;
@@ -64,12 +59,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 throw new RuntimeException('ID de usuario inválido.');
             }
 
-            // Evitar quitarte tu propio admin
+            // Evita quitarte tu propio admin
             if ($miUsuarioId !== null && (int)$miUsuarioId === $idUsuario) {
                 throw new RuntimeException('No puedes quitarte a ti mismo el rol de administrador.');
             }
 
-            // Evitar dejar el sistema sin administradores
+            // Evita dejar el sistema sin administradores
             if ($totalAdmins <= 1) {
                 throw new RuntimeException('No puedes quitar el rol al último administrador.');
             }
@@ -79,10 +74,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $msg = 'Rol de administrador quitado. Ahora es usuario estándar.';
 
         } else {
-            // Acción no reconocida: ignorar
+            // ignorar
         }
 
-        // Redirección PRG para mostrar mensaje y evitar repost
+        // Redirección para mostrar mensaje y evitar repost
         $qs = http_build_query(['sec' => 'usuarios', 'msg' => $msg]);
         header("Location: ".$_SERVER['PHP_SELF']."?".$qs);
         exit;
@@ -96,11 +91,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// 4) Cargar mensajes por GET (PRG)
+// Cargar mensajes
 if (!empty($_GET['msg'])) $msg = $_GET['msg'];
 if (!empty($_GET['err'])) $err = $_GET['err'];
 
-// 5) Obtener usuarios para la tabla
+//Obtiene usuarios para la tabla
 try {
     $usuarios = $pdo->query("
         SELECT 
@@ -224,7 +219,6 @@ try {
   </div>
 
 <script>
-  // Si luego agregas más secciones en este archivo, esto te sirve:
   function showSection(id) {
     document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
     const el = document.getElementById(id);

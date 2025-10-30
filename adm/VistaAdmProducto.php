@@ -7,7 +7,7 @@ if (empty($_SESSION['usuario']) || (int)($_SESSION['role_id'] ?? 0) !== 1) {
 }
 
 // ======= Conexión PDO y utilidades =======
-require_once __DIR__ . '/../inc/init.php'; // crea $pdo
+require_once __DIR__ . '/../inc/init.php';
 function h($s){ return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
 
 // ======= Catálogos =======
@@ -32,7 +32,7 @@ function guardarImagenProducto(array $file, string $skuParaNombre): ?string {
     if (!move_uploaded_file($file['tmp_name'], $dest)) {
         throw new RuntimeException('No se pudo mover la imagen.');
     }
-    return 'imagenes/productos/' . $skuParaNombre . '.' . $ext; // ruta relativa a guardar en BD
+    return 'imagenes/productos/' . $skuParaNombre . '.' . $ext;
 }
 
 function nombrePorID(PDO $pdo, string $tabla, string $pk, int $id, string $campo = 'nombre'): string {
@@ -45,120 +45,137 @@ $action = $_POST['action'] ?? '';
 $msg = ''; $err = '';
 
 try {
-    // ============================================================
-    // ===============   CREAR PRODUCTO (con validación) ==========
-    // ============================================================
-    if ($action === 'create_product') {
-        $nombre       = trim($_POST['nombre'] ?? '');
-        $id_marca_sel = $_POST['id_marca'] ?? '';
-        $id_categoria = (int)($_POST['id_categoria'] ?? 0);
-        $nuevo_modelo = trim($_POST['nuevo_modelo'] ?? '');
-        $nueva_marca  = trim($_POST['nueva_marca'] ?? '');
-        $precio       = (float)($_POST['precio'] ?? 0);
-        $costo        = (float)($_POST['costo'] ?? 0);
-        $gasto        = (float)($_POST['gasto'] ?? 0);
+   if ($action === 'create_product') {
+    $nombre = trim($_POST['nombre'] ?? '');
+    $id_m_raw = $_POST['id_marca'] ?? '';
+    $id_m = (int)$id_m_raw;
+    $id_c = (int)($_POST['id_categoria'] ?? 0);
+    $modelo = trim($_POST['modelo'] ?? '');
 
-        // Validaciones fuertes de creación
-        if ($nombre === '')                     throw new RuntimeException('El nombre del producto es obligatorio.');
-        if ($id_categoria <= 0)                 throw new RuntimeException('Debes seleccionar una categoría.');
-        if ($nuevo_modelo === '')               throw new RuntimeException('Debes escribir el modelo (dispositivo).');
-        if ($precio <= 0 || $costo <= 0 || $gasto <= 0)
-                                                throw new RuntimeException('Precio, costo y gasto deben ser mayores a 0.');
+    $precio = (float)($_POST['precio'] ?? 0);
+    $costo  = (float)($_POST['costo'] ?? 0);
+    $gasto  = (float)($_POST['gasto'] ?? 0);
 
-        // Marca: existente o nueva
-        if ($id_marca_sel === 'nueva') {
-            if ($nueva_marca === '') throw new RuntimeException('Escribe el nombre de la nueva marca.');
-            // ¿Ya existe?
-            $stmt = $pdo->prepare("SELECT id_marca FROM marcas WHERE LOWER(nombre)=LOWER(?) LIMIT 1");
-            $stmt->execute([$nueva_marca]);
-            $id_marca = (int)($stmt->fetchColumn() ?: 0);
-            if ($id_marca === 0) {
-                $pdo->prepare("INSERT INTO marcas (nombre) VALUES (?)")->execute([$nueva_marca]);
-                $id_marca = (int)$pdo->lastInsertId();
-            }
-        } else {
-            $id_marca = (int)$id_marca_sel;
-            if ($id_marca <= 0) throw new RuntimeException('Debes seleccionar una marca o crear una nueva.');
-        }
-
-        // Dispositivo (modelo) para esa marca: crear si no existe
-        $stmt = $pdo->prepare("SELECT id_dispositivo FROM dispositivos WHERE LOWER(modelo)=LOWER(?) AND id_marca=? LIMIT 1");
-        $stmt->execute([$nuevo_modelo, $id_marca]);
-        $id_dispositivo = (int)($stmt->fetchColumn() ?: 0);
-        if ($id_dispositivo === 0) {
-            $pdo->prepare("INSERT INTO dispositivos (id_marca, modelo) VALUES (?, ?)")->execute([$id_marca, $nuevo_modelo]);
-            $id_dispositivo = (int)$pdo->lastInsertId();
-        }
-
-        // Insertamos primero SIN sku para obtener el ID
-        $pdo->prepare("INSERT INTO productos (sku, nombre, id_marca, id_categoria, id_dispositivo, precio, costo, gasto)
-                       VALUES (NULL,?,?,?,?,?,?,?)")
-            ->execute([$nombre, $id_marca, $id_categoria, $id_dispositivo, $precio, $costo, $gasto]);
-        $nuevo_id = (int)$pdo->lastInsertId();
-
-        // Generación de SKU: CAT(3)-MAR(3)-XXX
-        $pref_cat = strtoupper(substr(nombrePorID($pdo, 'categorias', 'id_categoria', $id_categoria), 0, 3)) ?: 'GEN';
-        $pref_mar = strtoupper(substr(nombrePorID($pdo, 'marcas', 'id_marca', $id_marca), 0, 3)) ?: 'GEN';
-        $sku = "{$pref_cat}-{$pref_mar}-" . str_pad((string)$nuevo_id, 3, '0', STR_PAD_LEFT);
-
-        // Actualizamos SKU + imagen si llegó
-        $pdo->prepare("UPDATE productos SET sku=? WHERE id_producto=?")->execute([$sku, $nuevo_id]);
-        if (!empty($_FILES['imagen']) && $_FILES['imagen']['error'] === UPLOAD_ERR_OK) {
-            $ruta = guardarImagenProducto($_FILES['imagen'], $sku);
-            $pdo->prepare("UPDATE productos SET imagen=? WHERE id_producto=?")->execute([$ruta, $nuevo_id]);
-        }
-
-        $msg = "✅ Producto creado correctamente (SKU: $sku).";
+    if ($nombre === '') throw new RuntimeException('El nombre del producto es obligatorio.');
+    if ($modelo === '') throw new RuntimeException('El modelo es obligatorio.');
+    if ($precio <= 0 || $costo <= 0 || $gasto < 0) {
+        throw new RuntimeException('Precio, costo y gasto deben ser valores positivos.');
     }
 
-    // ============================================================
+    // Si el usuario seleccionó "Agregar nueva marca"
+    if ($id_m_raw === 'nueva') {
+        $nombreNuevaMarca = trim($_POST['nueva_marca'] ?? '');
+        if ($nombreNuevaMarca === '') {
+            throw new RuntimeException('Debes escribir el nombre de la nueva marca.');
+        }
+        $stmt = $pdo->prepare("INSERT INTO marcas (nombre) VALUES (?)");
+        $stmt->execute([$nombreNuevaMarca]);
+        $id_m = (int)$pdo->lastInsertId();
+    }
+
+    if ($id_m <= 0) throw new RuntimeException('Debes seleccionar una marca.');
+    if ($id_c <= 0) throw new RuntimeException('Debes seleccionar una categoría.');
+
+    // Busca o crea modelo en tabla dispositivos
+    $stmt = $pdo->prepare("SELECT id_dispositivo FROM dispositivos WHERE modelo = ? AND id_marca = ? LIMIT 1");
+    $stmt->execute([$modelo, $id_m]);
+    $id_d = (int)$stmt->fetchColumn();
+
+    if ($id_d === 0) {
+        $stmt = $pdo->prepare("INSERT INTO dispositivos (modelo, id_marca) VALUES (?, ?)");
+        $stmt->execute([$modelo, $id_m]);
+        $id_d = (int)$pdo->lastInsertId();
+    }
+
+    // Insertar temporalmente sin SKU para obtener el ID
+    $sql = "INSERT INTO productos (sku, nombre, id_marca, id_categoria, id_dispositivo, precio, costo, gasto)
+            VALUES ('TEMP',?,?,?,?,?,?,?)";
+    $pdo->prepare($sql)->execute([$nombre, $id_m, $id_c, $id_d, $precio, $costo, $gasto]);
+    $nuevo_id = (int)$pdo->lastInsertId();
+
+    //Generar SKU automáticamente según la marca y categoría
+    $marca = strtoupper(substr(nombrePorID($pdo, 'marcas', 'id_marca', $id_m), 0, 3)) ?: 'GEN';
+    $cat   = strtoupper(substr(nombrePorID($pdo, 'categorias', 'id_categoria', $id_c), 0, 3)) ?: 'GEN';
+    $sku   = "{$cat}-{$marca}-" . str_pad($nuevo_id, 3, '0', STR_PAD_LEFT);
+
+    // Actualizar el SKU real
+    $pdo->prepare("UPDATE productos SET sku=? WHERE id_producto=?")->execute([$sku, $nuevo_id]);
+
+    //Guardar imagen (opcional)
+    if (!empty($_FILES['imagen']['name'])) {
+        $ruta = guardarImagenProducto($_FILES['imagen'], $sku);
+        $pdo->prepare("UPDATE productos SET imagen=? WHERE id_producto=?")->execute([$ruta, $nuevo_id]);
+    }
+
+    $msg = "✅ Producto creado correctamente (SKU: $sku).";
+}
+
     // ===================   EDITAR PRODUCTO   =====================
-    // ============================================================
-    if ($action === 'update_product') {
-        $id            = (int)($_POST['id_producto'] ?? 0);
-        $sku           = trim($_POST['sku'] ?? '');
-        $nombre        = trim($_POST['nombre'] ?? '');
-        $id_marca      = (int)($_POST['id_marca'] ?? 0);
-        $id_categoria  = (int)($_POST['id_categoria'] ?? 0);
-        $id_dispositivo= (isset($_POST['id_dispositivo']) && $_POST['id_dispositivo'] !== '' && $_POST['id_dispositivo'] !== '0')
-                          ? (int)$_POST['id_dispositivo'] : null;
-        $precio        = (float)($_POST['precio'] ?? 0);
-        $costo         = (float)($_POST['costo'] ?? 0);
-        $gasto         = (float)($_POST['gasto'] ?? 0);
+   if ($action === 'update_product') {
+    $id            = (int)($_POST['id_producto'] ?? 0);
+    $sku           = trim($_POST['sku'] ?? '');
+    $nombre        = trim($_POST['nombre'] ?? '');
+    $id_m_raw      = $_POST['id_marca'] ?? '';
+    $id_marca      = (int)$id_m_raw;
+    $id_categoria  = (int)($_POST['id_categoria'] ?? 0);
+    $modelo        = trim($_POST['modelo'] ?? '');
+    $precio        = (float)($_POST['precio'] ?? 0);
+    $costo         = (float)($_POST['costo'] ?? 0);
+    $gasto         = (float)($_POST['gasto'] ?? 0);
 
-        if ($id <= 0)                      throw new RuntimeException('ID inválido.');
-        if ($sku === '' || $nombre === '') throw new RuntimeException('SKU y Nombre son obligatorios.');
-
-        // Si la categoría es Accesorios => forzar id_dispositivo = NULL
-        $accId = (int)($pdo->query("SELECT id_categoria FROM categorias WHERE LOWER(nombre)='accesorios' LIMIT 1")->fetchColumn() ?: 0);
-        if ($accId && $id_categoria === $accId) {
-            $id_dispositivo = null;
-        }
-
-        // Imagen opcional
-        $ruta = (!empty($_FILES['imagen']['name']) && $_FILES['imagen']['error'] === UPLOAD_ERR_OK)
-                  ? guardarImagenProducto($_FILES['imagen'], $sku)
-                  : null;
-
-        if ($ruta) {
-            $sql = "UPDATE productos
-                      SET sku=?, nombre=?, id_marca=?, id_categoria=?, id_dispositivo=?, precio=?, costo=?, gasto=?, imagen=?
-                    WHERE id_producto=?";
-            $params = [$sku,$nombre,$id_marca,$id_categoria,$id_dispositivo,$precio,$costo,$gasto,$ruta,$id];
-        } else {
-            $sql = "UPDATE productos
-                      SET sku=?, nombre=?, id_marca=?, id_categoria=?, id_dispositivo=?, precio=?, costo=?, gasto=?
-                    WHERE id_producto=?";
-            $params = [$sku,$nombre,$id_marca,$id_categoria,$id_dispositivo,$precio,$costo,$gasto,$id];
-        }
-        $pdo->prepare($sql)->execute($params);
-
-        $msg = "✏️ Producto actualizado correctamente.";
+    if ($id <= 0)                      throw new RuntimeException('ID inválido.');
+    if ($sku === '' || $nombre === '') throw new RuntimeException('SKU y Nombre son obligatorios.');
+    if ($modelo === '')                throw new RuntimeException('El modelo es obligatorio.');
+    if ($precio <= 0 || $costo <= 0 || $gasto < 0) {
+        throw new RuntimeException('Precio, costo y gasto deben ser valores positivos.');
     }
 
-    // ============================================================
+    //Si el usuario seleccionó "Agregar nueva marca"
+    if ($id_m_raw === 'nueva') {
+        $nombreNuevaMarca = trim($_POST['nueva_marca'] ?? '');
+        if ($nombreNuevaMarca === '') {
+            throw new RuntimeException('Debes escribir el nombre de la nueva marca.');
+        }
+        $stmt = $pdo->prepare("INSERT INTO marcas (nombre) VALUES (?)");
+        $stmt->execute([$nombreNuevaMarca]);
+        $id_marca = (int)$pdo->lastInsertId();
+    }
+
+    if ($id_marca <= 0) throw new RuntimeException('Debes seleccionar una marca.');
+
+    // Busca o crea modelo en dispositivos
+    $stmt = $pdo->prepare("SELECT id_dispositivo FROM dispositivos WHERE modelo = ? AND id_marca = ? LIMIT 1");
+    $stmt->execute([$modelo, $id_marca]);
+    $id_d = (int)$stmt->fetchColumn();
+
+    if ($id_d === 0) {
+        $stmt = $pdo->prepare("INSERT INTO dispositivos (modelo, id_marca) VALUES (?, ?)");
+        $stmt->execute([$modelo, $id_marca]);
+        $id_d = (int)$pdo->lastInsertId();
+    }
+
+    // Imagen opcional
+    $ruta = (!empty($_FILES['imagen']['name']) && $_FILES['imagen']['error'] === UPLOAD_ERR_OK)
+              ? guardarImagenProducto($_FILES['imagen'], $sku)
+              : null;
+
+    if ($ruta) {
+        $sql = "UPDATE productos
+                  SET sku=?, nombre=?, id_marca=?, id_categoria=?, id_dispositivo=?, precio=?, costo=?, gasto=?, imagen=?
+                WHERE id_producto=?";
+        $params = [$sku,$nombre,$id_marca,$id_categoria,$id_d,$precio,$costo,$gasto,$ruta,$id];
+    } else {
+        $sql = "UPDATE productos
+                  SET sku=?, nombre=?, id_marca=?, id_categoria=?, id_dispositivo=?, precio=?, costo=?, gasto=?
+                WHERE id_producto=?";
+        $params = [$sku,$nombre,$id_marca,$id_categoria,$id_d,$precio,$costo,$gasto,$id];
+    }
+    $pdo->prepare($sql)->execute($params);
+
+    $msg = "✏️ Producto actualizado correctamente.";
+}
+
     // ==================   ELIMINAR PRODUCTO   ====================
-    // ============================================================
     if ($action === 'delete_product') {
         $id = (int)($_POST['id_producto'] ?? 0);
         if ($id <= 0) throw new RuntimeException('ID inválido.');
@@ -204,7 +221,7 @@ $productosListado = $st->fetchAll();
 <link rel="stylesheet" href="estilos.css">
 <link rel="icon" href="/../imagenes/LogoLionCell.ico">
 <style>
-/* mini estilos para forms */
+/*estilos para forms */
 .form-agregar, .form-editar {background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:16px;margin-bottom:16px;}
 .form-agregar h4, .form-editar h4 {margin:6px 0 12px 0}
 .form-agregar label, .form-editar label {display:block;margin-top:8px;color:#374151}
@@ -240,8 +257,6 @@ $productosListado = $st->fetchAll();
         <h3>Gestión de productos</h3>
         <div class="user"><span>Administrador</span></div>
       </div>
-
-      <!-- 🔽 Aquí va todo tu contenido tal cual -->
       <?php if($msg): ?>
         <div style="background:#ecfffa;border:1px solid #a7f3d0;color:#065f46;padding:10px;margin-bottom:12px;"><?=h($msg)?></div>
       <?php endif; ?>
@@ -277,7 +292,7 @@ $productosListado = $st->fetchAll();
         <input type="hidden" name="action" value="create_product">
         <h4>Agregar nuevo producto</h4>
 
-        <!-- SKU se genera solo; mostramos un preview -->
+        <!-- SKU se genera solo -->
         <label>SKU (se generará automáticamente)</label>
         <input id="sku_preview" readonly placeholder="Se generará al guardar" style="background:#f5f5f5;">
 
@@ -297,8 +312,8 @@ $productosListado = $st->fetchAll();
           <input type="text" name="nueva_marca" id="c_nueva_marca" placeholder="Escribe nueva marca">
         </div>
 
-        <label>Modelo (dispositivo)*</label>
-        <input type="text" name="nuevo_modelo" id="c_nuevo_modelo" placeholder="Ej. Galaxy A55" required>
+        <label>Modelo*</label>
+        <input type="text" name="modelo" id="c_modelo" placeholder="Ej. Galaxy A55" required>
 
         <label>Categoría*</label>
         <select name="id_categoria" id="c_id_categoria" required>
@@ -340,13 +355,27 @@ $productosListado = $st->fetchAll();
         <label>Nombre*</label>
         <input name="nombre" id="e_nombre" required>
 
-        <label>Marca</label>
-        <select name="id_marca" id="e_id_marca">
-          <option value="0">—</option>
+        <label>Marca*</label>
+        <select name="id_marca" id="e_id_marca" required onchange="toggleNuevaMarca()">
+          <option value="">— Selecciona una marca —</option>
           <?php foreach($marcas as $mm): ?>
             <option value="<?=$mm['id_marca']?>"><?=h($mm['nombre'])?></option>
           <?php endforeach; ?>
+          <option value="nueva">Agregar nueva marca</option>
         </select>
+
+        <div id="campoNuevaMarca" style="display:none;margin-top:5px;">
+          <input type="text" name="nueva_marca" id="nueva_marca" placeholder="Escribe el nombre de la nueva marca">
+        </div>
+
+        <script>
+        function toggleNuevaMarcaEdit() {
+        const sel = document.getElementById('e_id_marca');
+        const campo = document.getElementById('campoNuevaMarca');
+        campo.style.display = (sel.value === 'nueva') ? 'block' : 'none';
+        }
+        </script>
+
 
         <label>Categoría</label>
         <select name="id_categoria" id="e_id_categoria">
@@ -356,13 +385,9 @@ $productosListado = $st->fetchAll();
           <?php endforeach; ?>
         </select>
 
-        <label>Dispositivo (modelo)</label>
-        <select name="id_dispositivo" id="e_id_dispositivo">
-          <option value="0">—</option>
-          <?php foreach($dispositivos as $dd): ?>
-            <option value="<?=$dd['id_dispositivo']?>"><?=h($dd['modelo'])?></option>
-          <?php endforeach; ?>
-        </select>
+        <label>Modelo*</label>
+        <input type="text" name="modelo" id="e_modelo" required>
+
 
         <label>Precio</label>
         <input type="number" step="0.01" name="precio" id="e_precio">
@@ -404,17 +429,18 @@ $productosListado = $st->fetchAll();
 
             <div style="display:flex;gap:8px;margin-top:10px">
               <button class="btn" style="background:#f59e0b"
-                onclick='abrirFormEditar(
-                  <?= (int)$p["id_producto"] ?>,
-                  <?= json_encode($p["sku"]) ?>,
-                  <?= json_encode($p["nombre"]) ?>,
-                  <?= (int)$p["id_marca"] ?>,
-                  <?= (int)$p["id_categoria"] ?>,
-                  <?= (int)$p["id_dispositivo"] ?>,
-                  <?= (float)$p["precio"] ?>,
-                  <?= (float)$p["costo"] ?>,
-                  <?= (float)$p["gasto"] ?>
-                )'>Editar</button>
+              onclick='abrirFormEditar(
+                <?= (int)$p["id_producto"] ?>,
+                <?= json_encode($p["sku"]) ?>,
+                <?= json_encode($p["nombre"]) ?>,
+                <?= (int)$p["id_marca"] ?>,
+                <?= (int)$p["id_categoria"] ?>,
+                <?= json_encode($p["modelo"]) ?>,
+                <?= (float)$p["precio"] ?>,
+                <?= (float)$p["costo"] ?>,
+                <?= (float)$p["gasto"] ?>
+              )'>Editar</button>
+
 
               <form method="post" action="VistaAdmProducto.php#productos" onsubmit="return confirm('¿Eliminar este producto?')">
                 <input type="hidden" name="action" value="delete_product">
@@ -428,13 +454,33 @@ $productosListado = $st->fetchAll();
     </div>
   
       ...
-    </div> <!-- /main-content -->
+    </div>
 <script>
+function validarCamposNumericos(e) {
+  const form = e.target.closest('form');
+  const precio = parseFloat(form.querySelector('[name="precio"]').value) || 0;
+  const costo  = parseFloat(form.querySelector('[name="costo"]').value)  || 0;
+  const gasto  = parseFloat(form.querySelector('[name="gasto"]').value)  || 0;
+
+  if (precio <= 0 || costo <= 0 || gasto < 0) {
+    alert('Precio, costo y gasto deben ser números positivos mayores a 0.');
+    e.preventDefault();
+    return false;
+  }
+  return true;
+}
+
+// Asigna validación a ambos formularios
+document.addEventListener('DOMContentLoaded', ()=>{
+  const forms = document.querySelectorAll('form[action*="VistaAdmProducto.php"]');
+  forms.forEach(f => f.addEventListener('submit', validarCamposNumericos));
+});
+
 // ======= Toggle formularios =======
 function abrirFormCrear(){
   document.getElementById('formEditar').style.display='none';
   document.getElementById('formCrear').style.display='block';
-  // limpiar creación
+  // limpia la creación
   document.getElementById('sku_preview').value='';
   ['c_nombre','c_nuevo_modelo','c_precio','c_costo','c_gasto','c_nueva_marca'].forEach(id=>{const el=document.getElementById(id); if(el) el.value='';});
   document.getElementById('c_id_marca').value='';
@@ -444,7 +490,7 @@ function abrirFormCrear(){
 }
 function cerrarFormCrear(){ document.getElementById('formCrear').style.display='none'; }
 
-function abrirFormEditar(id,sku,nombre,id_marca,id_categoria,id_dispositivo,precio,costo,gasto){
+function abrirFormEditar(id,sku,nombre,id_marca,id_categoria,modelo,precio,costo,gasto){
   document.getElementById('formCrear').style.display='none';
   const f = document.getElementById('formEditar');
   document.getElementById('e_id_producto').value = id;
@@ -452,13 +498,14 @@ function abrirFormEditar(id,sku,nombre,id_marca,id_categoria,id_dispositivo,prec
   document.getElementById('e_nombre').value    = nombre || '';
   document.getElementById('e_id_marca').value  = id_marca || 0;
   document.getElementById('e_id_categoria').value = id_categoria || 0;
-  document.getElementById('e_id_dispositivo').value = id_dispositivo || 0;
+  document.getElementById('e_modelo').value    = modelo || '';
   document.getElementById('e_precio').value    = (precio ?? '') === 0 ? '' : precio;
   document.getElementById('e_costo').value     = (costo  ?? '') === 0 ? '' : costo;
   document.getElementById('e_gasto').value     = (gasto  ?? '') === 0 ? '' : gasto;
   f.style.display = 'block';
   f.scrollIntoView({behavior:'smooth', block:'start'});
 }
+
 function cerrarFormEditar(){ document.getElementById('formEditar').style.display='none'; }
 
 // ======= Lógica UI creación =======
@@ -467,7 +514,6 @@ function toggleNuevaMarca(){
   document.getElementById('wrapNuevaMarca').style.display = (sel.value === 'nueva') ? 'block' : 'none';
 }
 
-// (Opcional) Preview del SKU al elegir categoría/marca (solo visual)
 // El SKU real se genera al guardar con el ID.
 (function(){
   const skuPrev = document.getElementById('sku_preview');
@@ -488,7 +534,7 @@ function toggleNuevaMarca(){
   nm.addEventListener('input', updatePreview);
 })();
 </script>
-  </div> <!-- /layout -->
+  </div>
 
 </body>
 

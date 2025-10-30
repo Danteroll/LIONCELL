@@ -22,7 +22,7 @@ try {
       throw new Exception("Datos de venta inválidos.");
     }
 
-    // Obtener precio, costo y stock
+    // Obtiene precio, costo y stock
     $stmt = $pdo->prepare("
       SELECT p.nombre, p.precio, p.costo, COALESCE(i.stock_actual,0) AS stock_actual
       FROM productos p
@@ -44,17 +44,17 @@ try {
     $subtotal = $precio * $cantidad;
     $ganancia = ($precio - $costo) * $cantidad;
 
-    // === Registrar venta general (id_pedido NULL para local) ===
+    // === Registra venta general ===
     $pdo->prepare("INSERT INTO ventas (id_pedido, total, fecha_venta) VALUES (NULL, ?, NOW())")->execute([$subtotal]);
     $id_venta = $pdo->lastInsertId();
 
-    // === Insertar detalle ===
+    // === Inserta detalle ===
     $pdo->prepare("
       INSERT INTO venta_items (id_venta, id_producto, cantidad, precio_unit, subtotal)
       VALUES (?, ?, ?, ?, ?)
     ")->execute([$id_venta, $id_producto, $cantidad, $precio, $subtotal]);
 
-    // === Actualizar inventario ===
+    // === Actualiza inventario ===
     $pdo->prepare("
       UPDATE inventario
       SET stock_actual = stock_actual - ?
@@ -64,7 +64,7 @@ try {
     $msg = "✅ Venta local registrada correctamente (ID Venta #$id_venta).";
   }
 
-  // === CONSULTAR VENTAS POR PEDIDOS (clientes) ===
+  // === CONSULTAR VENTAS POR PEDIDOS ===
   $ventasPedidos = $pdo->query("
     SELECT 
       p.id_pedido,
@@ -80,7 +80,7 @@ try {
     ORDER BY p.fecha_pedido DESC
   ")->fetchAll();
 
-  // === Ver items de pedido específico ===
+  // === Vee items de pedido específico ===
   $pedidoItems = [];
   if (isset($_GET['ver_items'])) {
     $id_pedido = (int)$_GET['ver_items'];
@@ -94,7 +94,7 @@ try {
     $pedidoItems = $stmt->fetchAll();
   }
 
-  // === Ventas de punto de venta (registradas manualmente) ===
+  // === Ventas de punto de venta ===
   $ventasPunto = $pdo->query("
     SELECT 
       v.id_venta,
@@ -236,14 +236,14 @@ button:hover{background:#1e3a8a;}
 </div>
 
 <script>
-// === Mostrar/Ocultar productos del pedido ===
+// === Muestra/Oculta productos del pedido ===
 document.querySelectorAll('.toggle-items').forEach(btn => {
   btn.addEventListener('click', async () => {
     const id = btn.dataset.id;
     const row = document.getElementById('items-' + id);
 
     if (row.style.display === 'none') {
-      // Mostrar (expandir)
+      // Mostrar
       row.style.display = 'table-row';
       const div = row.querySelector('.loading');
       div.textContent = 'Cargando productos...';
@@ -341,7 +341,7 @@ $(document).ready(function() {
   });
 });
 
-// Mostrar stock disponible al seleccionar producto
+// Muestra stock disponible al seleccionar producto
 const selectProd = document.getElementById('id_producto');
 const inputCant = document.getElementById('cantidad');
 const infoStock = document.getElementById('info-stock');
@@ -357,7 +357,7 @@ selectProd.addEventListener('change', () => {
   }
 });
 
-// Validar cantidad antes de enviar
+// Valida cantidad antes de enviar
 document.getElementById('formVentaLocal').addEventListener('submit', (e) => {
   const opt = selectProd.options[selectProd.selectedIndex];
   const stock = parseInt(opt.dataset.stock || 0);

@@ -24,14 +24,14 @@ ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
 // --- Conexión PDO ---
-$db_host = '127.0.0.1';          // o tu host del servidor remoto
+$db_host = '127.0.0.1';        
 $db_port = 3306;
-$db_name = 'sitio';              // nombre de tu BD
+$db_name = 'sitio';      
 $db_user = 'root';
-$db_pass = '';                   // cambia si estás en hosting
+$db_pass = '';        
 
 $charset   = 'utf8mb4';
-$collation = 'utf8mb4_unicode_ci'; // usa _unicode_ci para compatibilidad máxima
+$collation = 'utf8mb4_unicode_ci'; 
 
 $dsn = "mysql:host={$db_host};port={$db_port};dbname={$db_name};charset={$charset}";
 
@@ -42,12 +42,11 @@ try {
         PDO::ATTR_EMULATE_PREPARES   => false,
     ]);
 
-    // Fuerza el charset y collation de la sesión actual
     $pdo->exec("SET NAMES '{$charset}' COLLATE '{$collation}'");
     $pdo->exec("SET CHARACTER SET '{$charset}'");
     $pdo->exec("SET SESSION collation_connection = '{$collation}'");
 
-    // Encabezado global para UTF-8 (opcional pero recomendable)
+    // Encabezado global para UTF-8
     if (!headers_sent()) {
         header('Content-Type: text/html; charset=utf-8');
     }

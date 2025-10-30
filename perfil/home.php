@@ -1,6 +1,6 @@
    <?php
 
-   require_once __DIR__ . '/../inc/init.php'; // Ajusta la ruta si está en otra carpeta
+   require_once __DIR__ . '/../inc/init.php'; 
 
    include 'config.php';
 
@@ -27,8 +27,6 @@
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <title>home</title>
       <link rel="icon" href="imagenes/LogoLionCell.ico">
-
-      <!-- custom css file link  -->
       <link rel="stylesheet" href="css/style.css">
 
 

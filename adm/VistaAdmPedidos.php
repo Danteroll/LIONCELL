@@ -22,7 +22,7 @@ try {
             try {
                 $pdo->beginTransaction();
 
-                // 1️⃣ Obtener los productos del pedido
+                // Obtiene los productos del pedido
                 $stmtItems = $pdo->prepare("
                     SELECT id_producto, cantidad, precio_unit, subtotal
                     FROM pedido_items
@@ -35,7 +35,7 @@ try {
                     throw new Exception("El pedido no tiene productos asociados.");
                 }
 
-                // 2️⃣ Verificar disponibilidad de stock
+                // Verifica disponibilidad de stock
                 foreach ($items as $it) {
                     $stmtStock = $pdo->prepare("
                         SELECT COALESCE(stock_actual, 0)
@@ -51,23 +51,23 @@ try {
                     }
                 }
 
-                // 3️⃣ Cambiar estado del pedido
+                // Cambia estado del pedido
                 $pdo->prepare("UPDATE pedidos SET estado = 'vendido' WHERE id_pedido = ?")
                     ->execute([$id_pedido]);
 
-                // 4️⃣ Obtener total del pedido
+                // Obtiene total del pedido
                 $stmtPedido = $pdo->prepare("SELECT total FROM pedidos WHERE id_pedido = ?");
                 $stmtPedido->execute([$id_pedido]);
                 $total_pedido = (float)$stmtPedido->fetchColumn();
 
-                // 5️⃣ Insertar registro de venta
+                // Inserta registro de venta
                 $pdo->prepare("
                     INSERT INTO ventas (id_pedido, total, costo_total, ganancia, fecha_venta)
                     VALUES (?, ?, 0, 0, NOW())
                 ")->execute([$id_pedido, $total_pedido]);
                 $id_venta = $pdo->lastInsertId();
 
-                // 6️⃣ Insertar detalle de venta y actualizar inventario
+                // Inserta detalle de venta y actualiza el inventario
                 $stmtVentaItem = $pdo->prepare("
                     INSERT INTO venta_items (id_venta, id_producto, cantidad, precio_unit, subtotal)
                     VALUES (?, ?, ?, ?, ?)
@@ -83,13 +83,13 @@ try {
                         $it['subtotal']
                     ]);
 
-                    // Obtener costo del producto
+                    // Obtiene costo del producto
                     $stmtCosto = $pdo->prepare("SELECT costo FROM productos WHERE id_producto = ?");
                     $stmtCosto->execute([$it['id_producto']]);
                     $costo_unit = (float)$stmtCosto->fetchColumn();
                     $costo_total += $costo_unit * $it['cantidad'];
 
-                    // Restar inventario
+                    // Resta del inventario
                     $pdo->prepare("
                         UPDATE inventario
                         SET stock_actual = stock_actual - ?
@@ -97,10 +97,10 @@ try {
                     ")->execute([$it['cantidad'], $it['id_producto']]);
                 }
 
-                // 7️⃣ Calcular ganancia
+                // Calcula la ganancia
                 $ganancia = $total_pedido - $costo_total;
 
-                // 8️⃣ Actualizar venta con costo_total y ganancia
+                // Actualiza venta con costo_total y ganancia
                 $pdo->prepare("
                     UPDATE ventas
                     SET costo_total = ?, ganancia = ?
@@ -125,7 +125,7 @@ try {
         }
     }
 
-    // --- Obtener todos los pedidos ---
+    // --- Obtiene todos los pedidos ---
     $sql = "SELECT id_pedido, nombre_cliente, telefono, correo, total, estado, fecha_pedido
             FROM pedidos
             ORDER BY fecha_pedido DESC";
@@ -232,8 +232,6 @@ try {
             <?php endif; ?>
           </td>
         </tr>
-
-        <!-- Fila oculta con detalle -->
         <tr id="detalle-<?= (int)$p['id_pedido'] ?>" class="detalle-row">
           <td colspan="8" class="detalle-content">Cargando detalles...</td>
         </tr>
@@ -244,7 +242,7 @@ try {
 </div>
 
 <script>
-// Mostrar/ocultar detalles dinámicamente
+// Muestra/oculta detalles dinámicamente
 document.querySelectorAll('.btn-detalle').forEach(btn => {
   btn.addEventListener('click', async () => {
     const id = btn.dataset.id;
@@ -255,7 +253,6 @@ document.querySelectorAll('.btn-detalle').forEach(btn => {
       return;
     }
 
-    // Oculta otros abiertos
     document.querySelectorAll('.detalle-row').forEach(r => r.style.display = 'none');
 
     row.style.display = 'table-row';

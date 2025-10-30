@@ -1,11 +1,11 @@
 * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
-/* Quita el flex del body para que la sidebar fija funcione */
+
 body {
   height: 100vh;
   background: #f4f6f8;
   overflow-x: hidden; /* evita scroll lateral */
 }
-/* Contenedor principal que alinea sidebar + contenido */
+/* Contenedor principal */
 .layout {
   display: flex;
   min-height: 100vh;
@@ -13,24 +13,21 @@ body {
 }
 
 
-
-  /* Sidebar con tu gradiente original */
-
   /* Sidebar fija */
 .sidebar {
   position: fixed;
   top: 0;
   left: 0;
-  width: 240px;              /* ancho fijo de la barra lateral */
-  height: 100vh;             /* ocupa toda la altura visible */
-  background: #1e3a8a;       /* azul base (ajusta según tu paleta) */
+  width: 240px;      
+  height: 100vh;         
+  background: #1e3a8a;    
   color: #fff;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   padding: 20px;
   box-sizing: border-box;
-  overflow-y: auto;          /* scroll si hay muchos enlaces */
+  overflow-y: auto;       
   z-index: 100;
 }
 
@@ -50,16 +47,16 @@ body {
   border-radius: 6px;
 }
 
-/* Ajustar el área principal para dejar espacio lateral */
+/* Ajusta el área principal para dejar espacio lateral */
 .main-content {
-  margin-left: 260px;        /* deja espacio para la sidebar */
+  margin-left: 260px;     
   padding: 20px;
   box-sizing: border-box;
   min-height: 100vh;
   background: #f9fafb;
 }
 
-/* Asegurar que la barra superior quede fija dentro del área principal */
+/* Asegura que la barra superior quede fija dentro del área principal */
 .topbar {
   position: sticky;
   top: 0;
@@ -115,13 +112,13 @@ body {
 .inventario-table{
   width: 100%;
   border-collapse: collapse;
-  table-layout: fixed;         /* columnas más predecibles */
-  font-size: 14px;             /* ↓ tamaño de fuente */
+  table-layout: fixed;        
+  font-size: 14px;           
 }
 
 .inventario-table th,
 .inventario-table td{
-  padding: 6px 8px;            /* ↓ padding */
+  padding: 6px 8px;            
   vertical-align: middle;
   border-bottom: 1px solid #eef1f6;
 }
@@ -179,7 +176,6 @@ body {
   font-size: 13px;
 }
 
-/* Botones step (− / +) en compacto */
 .inventario-table .btn-step{
   width: 30px;
   background:#e8f0fe;
@@ -219,7 +215,7 @@ html, body {
 }
 
 .main-content {
-  margin-left: 240px; /* Igual que sidebar */
+  margin-left: 240px; 
   padding: 20px;
   background: #f9fafb;
   min-height: 100vh;

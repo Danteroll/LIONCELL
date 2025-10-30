@@ -7,7 +7,7 @@ if (empty($_SESSION['usuario']) || (int)($_SESSION['role_id'] ?? 0) !== 1) {
 }
 
 // ======= Conexión PDO y utilidades =======
-require_once __DIR__ . '/../inc/init.php'; // crea $pdo
+require_once __DIR__ . '/../inc/init.php'; 
 function h($s){ return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
 
 // Catálogos para selects
@@ -59,7 +59,7 @@ $pdo->prepare($sql)->execute([$idProd, $cantidad]);
 // ======= Filtros de Inventario (GET) =======
 $inv_cat   = (int)($_GET['inv_cat'] ?? 0);
 $inv_marca = (int)($_GET['inv_marca'] ?? 0);
-$inv_buscar = trim($_GET['inv_buscar'] ?? ''); // ← Nueva variable para la barra de búsqueda
+$inv_buscar = trim($_GET['inv_buscar'] ?? '');
 
 $whereInv = [];
 $parInv   = [];
@@ -83,7 +83,7 @@ if ($inv_buscar !== '') {
     $parInv[] = "%$inv_buscar%";
 }
 
-// Unir condiciones
+// Une condiciones
 $wInv = $whereInv ? ('WHERE '.implode(' AND ', $whereInv)) : '';
 
 // ======= Listado de Inventario =======
@@ -107,7 +107,6 @@ $sti = $pdo->prepare($sqlInv);
 $sti->execute($parInv);
 $inventarioListado = $sti->fetchAll();
 
-// Mensaje flash tras redirect
 if (!empty($_SESSION['flash_ok'])) {
     $msg = $_SESSION['flash_ok'];
     unset($_SESSION['flash_ok']);
@@ -133,7 +132,6 @@ if (!empty($_SESSION['flash_ok'])) {
   <div class="sidebar">
     <h2>Administración</h2>
     <div class="menu">
-       <!-- <a href="VistaAdm.php">Catálogo</a>-->
       <a href="VistaAdmUsuario.php">👤 Usuarios</a>
       <a href="VistaAdmProducto.php">🛍 Productos</a>
       <a href="VistaAdmPedidos.php">📦 Pedidos</a>
@@ -150,7 +148,7 @@ if (!empty($_SESSION['flash_ok'])) {
       <div class="user"><span>Administrador</span></div>
     </div>
 
-    <!-- ===== Inventario (desde BD) ===== -->
+    <!-- ===== Inventario ===== -->
     <section id="inventario" class="active">
       <h1> </h1>
 
@@ -221,7 +219,7 @@ if (!empty($_SESSION['flash_ok'])) {
                   <td><?= h($row['modelo'] ?: '—') ?></td>
                   <td>$<?= number_format((float)$row['precio'], 2) ?></td>
 
-                  <!-- Cantidad actual + edición -->
+                  <!-- Cantidad actual -->
                   <td>
                     <form method="post" class="qty-wrap" id="f-<?= $pid ?>">
                       <input type="hidden" name="action" value="update_stock">
@@ -242,7 +240,7 @@ if (!empty($_SESSION['flash_ok'])) {
         <?php endif; ?>
       </div>
     </section>
-  </div><!-- /main-content -->
+  </div>
 
 <script>
   function stepQty(id, delta){
@@ -252,13 +250,11 @@ if (!empty($_SESSION['flash_ok'])) {
     inp.value = n;
   }
 
-  // (Opcional) mantener sección desde ?sec= o #hash
   (function initSection(){
     const params = new URLSearchParams(location.search);
     const secByParam = params.get('sec');
     const secByHash  = location.hash ? location.hash.substring(1) : '';
     const section    = secByParam || secByHash || 'inventario';
-    // en esta vista solo hay inventario como activo
   })();
 </script>
 </body>

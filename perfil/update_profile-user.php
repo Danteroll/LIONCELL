@@ -13,7 +13,7 @@
     $update_image_tmp_name = $_FILES['update_image']['tmp_name'];
     $update_image_folder = 'uploaded_img/'.$update_image;
 
-    // Verificar si el correo ya existe en la base de datos
+    // Verifica si el correo ya existe en la base de datos
     if(!empty($update_email)){
         $verificar_correo = mysqli_query($conexion, "SELECT * FROM usuarios WHERE correo='$update_email' ");
         if(mysqli_num_rows($verificar_correo) > 0){
@@ -27,7 +27,7 @@
         }
     }
 
-    // Verificar si el nombre de usuario ya existe en la base de datos
+    // Verifica si el nombre de usuario ya existe en la base de datos
     if(!empty($update_name)){
         $verificar_usuario = mysqli_query($conexion, "SELECT * FROM usuarios WHERE usuario='$update_name' ");
         if(mysqli_num_rows($verificar_usuario) > 0){
@@ -41,7 +41,7 @@
         }
     }
 
-    // Actualizar el correo y/o el nombre de usuario
+    // Actualiza el correo y/o el nombre de usuario
     if(!empty($update_email) || !empty($update_name)){
         if(empty($update_email)){
             mysqli_query($conexion, "UPDATE `usuarios` SET usuario = '$update_name' WHERE id = '$user_id'") or die('query failed');
@@ -55,7 +55,7 @@
         }
     }
 
-    // Actualizar la imagen de perfil
+    // Actualiza la imagen de perfil
     if(!empty($update_image)){
         if($update_image_size > 2000000){
             $message[] = 'La imagen es muy grande';
@@ -79,7 +79,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>update profile</title>
 
-    <!-- custom css file link  -->
     <link rel="stylesheet" href="css/style.css">
 
     </head>
