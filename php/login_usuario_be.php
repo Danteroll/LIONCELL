@@ -2,6 +2,7 @@
 session_start();
 require_once 'conexion_be.php';
 require_once 'validacion.php'; // opcional, si tienes las funciones sugeridas
+$conexion->set_charset('utf8mb4');
 
 // Captura y saneamiento
 $correo     = trim($_POST['correo'] ?? '');
