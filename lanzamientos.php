@@ -61,7 +61,7 @@ if (isset($_GET['logout'])) {
   height:3.6em; overflow:hidden;
 }
 
-/* Botones como en la imagen (azul y dorado) */
+/* Botones  (azul y dorado) */
 .btn{
   margin-top:8px;
   padding:10px 14px;

@@ -1,11 +1,10 @@
 <?php
-// buscar.php — Lion Cell (combina diseño de Lanzamientos + lógica de búsqueda)
+// buscar.php — Lion Cell 
 require_once __DIR__ . '/inc/init.php';
 if (session_status() === PHP_SESSION_NONE) session_start();
 
-/* =========================
-   1) ENTRADAS (GET) LIMPIAS
-   ========================= */
+/*  1) ENTRADAS (GET) LIMPIAS
+  */
 $q       = trim($_GET['q'] ?? '');
 $min     = isset($_GET['min']) && $_GET['min'] !== '' ? max(0, (float)$_GET['min']) : null;
 $max     = isset($_GET['max']) && $_GET['max'] !== '' ? max(0, (float)$_GET['max']) : null;
@@ -15,14 +14,8 @@ $page    = max(1, (int)($_GET['page'] ?? 1));
 $perPage = 12;
 $offset  = ($page - 1) * $perPage;
 
-// Si llegó vacío, puedes redirigir o mostrar todo:
-// if ($q === '' && !$catIn && is_null($min) && is_null($max) && !$brands) {
-//   header('Location: index.php'); exit;
-// }
-
-/* =====================================
-   2) MAPEO CATEGORÍAS (ajusta a tu DB)
-   ===================================== */
+/* 2) MAPEO CATEGORÍAS (ajusta a tu DB)
+   */
 $catMap = [
   'fundas'      => 1,
   'micas'       => 2,
@@ -38,13 +31,12 @@ foreach ((array)$catIn as $c) {
 }
 $catIds = array_values(array_unique($catIds));
 
-/* ==========================================
-   3) CONSTRUCCIÓN DE WHERE + PARÁMETROS PDO
-   ========================================== */
+/* 3) CONSTRUCCIÓN DE WHERE + PARÁMETROS PDO
+   */
 $where = [];
 $paramsWhere = [];
 
-// Texto libre q => divide en términos
+// Texto libre q divide en términos
 if ($q !== '') {
   $terms = preg_split('/\s+/', $q, -1, PREG_SPLIT_NO_EMPTY);
   $likes = array_map(fn($t) => '%' . $t . '%', $terms);
@@ -77,9 +69,8 @@ if ($brands) {
 
 $whereSql = $where ? implode(' AND ', $where) : '1=1';
 
-/* =================
-   4) CONSULTA COUNT
-   ================= */
+/* 4) CONSULTA COUNT
+   */
 $sqlCount = "
   SELECT COUNT(*) 
   FROM productos p
@@ -92,9 +83,8 @@ $stmtCount->execute($paramsWhere);
 $totalRows  = (int)($stmtCount->fetchColumn() ?: 0);
 $totalPages = max(1, (int)ceil($totalRows / $perPage));
 
-/* ========================
-   5) CONSULTA DE RESULTADOS
-   ======================== */
+/* 5) CONSULTA DE RESULTADOS
+  */
 $sql = "
   SELECT 
     p.id_producto, p.sku, p.nombre, p.precio,
@@ -112,9 +102,8 @@ $stmt   = $pdo->prepare($sql);
 $stmt->execute($params);
 $rows = $stmt->fetchAll();
 
-/* ==================
-   6) HELPERS FRONTEND
-   ================== */
+/* 6) HELPERS FRONTEND
+   */
 function h($s){ return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
 function urlWith($overrides) {
   $base = $_GET;

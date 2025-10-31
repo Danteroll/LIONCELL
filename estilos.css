@@ -334,7 +334,7 @@ nav a:hover {
 }
 
 /* ====== Sidebar Filtros ====== */
-/* Contenedor general igual que tenías */
+/* Contenedor general */
 .lc-filters{background:#fff;border:1px solid rgba(10,10,10,.08);border-radius:12px;padding:16px;height:max-content}
 .lc-filters h3{margin:0 0 10px;font-size:16px}
 .f-group{border-top:1px solid #eee;padding:10px 0}
@@ -426,7 +426,7 @@ nav a:hover {
 .btn-clear{display:inline-block;padding:10px 14px;border-radius:10px;background:#999;color:#fff;text-decoration:none}
 .btn-clear:hover{background:#7f7f7f}
 
-/* Botones como en la imagen (azul y dorado) */
+/* Botones  */
 .btn{
   margin-top:8px;
   padding:10px 14px;

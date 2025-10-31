@@ -73,7 +73,7 @@ header h1 {
   font-size:1.4rem;
 }
 
-/* 🔵 Botón azul con texto blanco */
+/* Botón azul con texto blanco */
 .btn-top-right {
   background:#2563eb;           /* Azul brillante */
   color:#fff;                   /* Texto blanco */

@@ -231,12 +231,12 @@ main {
     appearance: none; /* oculta el estilo nativo */
 }
 
-/* Flecha del select (solo si quieres una flecha moderna) */
+/* Flecha del select */
 .campo-select select::-ms-expand {
     display: none;
 }
 .region-select {
-  background-color: #e8f6f0;       /* verde claro como tus inputs */
+  background-color: #e8f6f0;       /* verde claro */
   border: none;
   border-radius: 12px;
   padding: 12px;

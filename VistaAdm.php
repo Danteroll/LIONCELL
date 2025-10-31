@@ -7,7 +7,7 @@ if (empty($_SESSION['usuario']) || (int)($_SESSION['role_id'] ?? 0) !== 1) {
 }
 
 // ======= Conexión PDO y utilidades =======
-require_once __DIR__ . '/inc/init.php'; // crea $pdo
+require_once __DIR__ . '/inc/init.php'; 
 function h($s){ return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
 
 // Catálogos para selects
