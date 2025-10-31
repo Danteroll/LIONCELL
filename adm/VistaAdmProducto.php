@@ -40,39 +40,91 @@ function guardarImagenProducto(array $file, string $sku): ?string {
 // ======= Acciones CRUD =======
 $action = $_POST['action'] ?? '';
 $msg = ''; $err = '';
+function obtenerNombre(PDO $pdo, string $tabla, string $pkCol, int $id): string {
+    $allow = [
+        'marcas'     => 'id_marca',
+        'categorias' => 'id_categoria',
+    ];
+    if (!isset($allow[$tabla]) || $allow[$tabla] !== $pkCol) {
+        return '';
+    }
+    $sql = "SELECT nombre FROM {$tabla} WHERE {$pkCol} = ? LIMIT 1";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([$id]);
+    return (string)($stmt->fetchColumn() ?: '');
+}
+
+
 
 try {
     if ($action === 'create_product') {
-        $sku    = trim($_POST['sku'] ?? '');
-        $nombre = trim($_POST['nombre'] ?? '');
-        $id_m   = (int)($_POST['id_marca'] ?? 0);
-        $id_c   = (int)($_POST['id_categoria'] ?? 0);
+    $nombre = trim($_POST['nombre'] ?? '');
+    $id_m   = $_POST['id_marca'] ?? '';
+    $id_c   = (int)($_POST['id_categoria'] ?? 0);
+    $nuevo_modelo = trim($_POST['nuevo_modelo'] ?? '');
+    $nueva_marca = trim($_POST['nueva_marca'] ?? '');
 
-        // Normaliza id_dispositivo
-        $id_d = isset($_POST['id_dispositivo']) && $_POST['id_dispositivo'] !== '' && $_POST['id_dispositivo'] !== '0'
-                  ? (int)$_POST['id_dispositivo']
-                  : null;
+    // === Validaciones básicas ===
+    if ($nombre === '') throw new RuntimeException('El nombre del producto es obligatorio.');
+    if ($id_c <= 0) throw new RuntimeException('Debes seleccionar una categoría.');
+    if ($nuevo_modelo === '') throw new RuntimeException('Debes escribir un modelo.');
 
-        // Si la categoría es Accesorios => id_dispositivo = NULL
-        $accId = $pdo->query("SELECT id_categoria FROM categorias WHERE LOWER(nombre)='accesorios' LIMIT 1")->fetchColumn();
-        if ($accId && (int)$id_c === (int)$accId) {
-            $id_d = null;
+    // === Crear marca si es nueva ===
+    if ($id_m === 'nueva' && $nueva_marca !== '') {
+        // Verificar si ya existe
+        $stmt = $pdo->prepare("SELECT id_marca FROM marcas WHERE LOWER(nombre)=LOWER(?) LIMIT 1");
+        $stmt->execute([$nueva_marca]);
+        $id_m = $stmt->fetchColumn();
+        if (!$id_m) {
+            $pdo->prepare("INSERT INTO marcas (nombre) VALUES (?)")->execute([$nueva_marca]);
+            $id_m = $pdo->lastInsertId();
         }
-
-        $precio = (float)($_POST['precio'] ?? 0);
-        $costo  = (float)($_POST['costo'] ?? 0);
-        $gasto  = (float)($_POST['gasto'] ?? 0);
-
-        if ($sku === '' || $nombre === '') throw new RuntimeException('SKU y Nombre son obligatorios.');
-
-        $ruta = !empty($_FILES['imagen']) ? guardarImagenProducto($_FILES['imagen'], $sku) : null;
-
-        $sql = "INSERT INTO productos (sku, nombre, id_marca, id_categoria, id_dispositivo, precio, costo, gasto, imagen)
-                VALUES (?,?,?,?,?,?,?,?,?)";
-        $pdo->prepare($sql)->execute([$sku,$nombre,$id_m,$id_c,$id_d,$precio,$costo,$gasto,$ruta]);
-
-        $msg = 'Producto creado correctamente.';
+    } else {
+        $id_m = (int)$id_m;
+        if ($id_m <= 0) throw new RuntimeException('Debes seleccionar o crear una marca.');
     }
+
+    // === Crear modelo si no existe para esa marca ===
+    $stmt = $pdo->prepare("SELECT id_dispositivo FROM dispositivos WHERE LOWER(modelo)=LOWER(?) AND id_marca=? LIMIT 1");
+    $stmt->execute([$nuevo_modelo, $id_m]);
+    $id_d = $stmt->fetchColumn();
+    if (!$id_d) {
+        $pdo->prepare("INSERT INTO dispositivos (id_marca, modelo) VALUES (?, ?)")->execute([$id_m, $nuevo_modelo]);
+        $id_d = $pdo->lastInsertId();
+    }
+
+    // === Campos numéricos ===
+    $precio = (float)($_POST['precio'] ?? 0);
+    $costo  = (float)($_POST['costo'] ?? 0);
+    $gasto  = (float)($_POST['gasto'] ?? 0);
+
+    if ($precio <= 0 || $costo <= 0 || $gasto <= 0)
+        throw new RuntimeException('Precio, costo y gasto deben ser mayores a 0.');
+
+    // === Inserta producto ===
+    $sql = "INSERT INTO productos (nombre, id_marca, id_categoria, id_dispositivo, precio, costo, gasto)
+            VALUES (?,?,?,?,?,?,?)";
+    $pdo->prepare($sql)->execute([$nombre, $id_m, $id_c, $id_d, $precio, $costo, $gasto]);
+
+    $nuevo_id = (int)$pdo->lastInsertId();
+
+    // === Generar SKU automático ===
+    $marca_pref = strtoupper(substr(obtenerNombre($pdo, 'marcas', 'id_marca', $id_m), 0, 3)) ?: 'GEN';
+    $cat_pref   = strtoupper(substr(obtenerNombre($pdo, 'categorias', 'id_categoria', $id_c), 0, 3)) ?: 'GEN';
+    $sku = "{$cat_pref}-{$marca_pref}-" . str_pad($nuevo_id, 3, '0', STR_PAD_LEFT);
+
+    $pdo->prepare("UPDATE productos SET sku=? WHERE id_producto=?")->execute([$sku, $nuevo_id]);
+
+    // === Imagen (opcional) ===
+    if (!empty($_FILES['imagen']) && $_FILES['imagen']['error'] === UPLOAD_ERR_OK) {
+        $ruta = guardarImagenProducto($_FILES['imagen'], $sku);
+        $pdo->prepare("UPDATE productos SET imagen=? WHERE id_producto=?")->execute([$ruta, $nuevo_id]);
+    }
+
+    $msg = "Producto creado correctamente (SKU: $sku).";
+}
+
+
 
     if ($action === 'update_product') {
         $id     = (int)($_POST['id_producto'] ?? 0);
@@ -221,61 +273,96 @@ $productosListado = $st->fetchAll();
         <div class="producto-item" style="background:#fff5f5;border:1px solid #fecaca;color:#991b1b">Error: <?=h($err)?></div>
       <?php endif; ?>
 
-      <!-- Form Crear/Editar -->
-      <div id="formProducto" class="form-agregar" style="display:none">
-        <form method="post" enctype="multipart/form-data" action="VistaAdmProducto.php#productos">
-          <input type="hidden" name="action" id="formAction" value="create_product">
-          <input type="hidden" name="id_producto" id="id_producto">
-          <h4 id="formTitulo">Agregar nuevo producto</h4>
+<!-- Form Crear/Editar -->
+<div id="formProducto" class="form-agregar" style="display:none">
+  <form method="post" enctype="multipart/form-data" action="VistaAdmProducto.php#productos">
+    <input type="hidden" name="action" id="formAction" value="create_product">
 
-          <label>SKU*</label>
-          <input name="sku" id="sku" required>
+    <h4 id="formTitulo">Agregar nuevo producto</h4>
 
-          <label>Nombre*</label>
-          <input name="nombre" id="nombre" required>
+    <label>SKU (se generará automáticamente)</label>
+    <input name="sku_preview" id="sku" readonly placeholder="Se generará al guardar" style="background:#f5f5f5;">
 
-          <label>Marca</label>
-          <select name="id_marca" id="id_marca">
-            <option value="0">—</option>
-            <?php foreach($marcas as $mm): ?>
-              <option value="<?=$mm['id_marca']?>"><?=h($mm['nombre'])?></option>
-            <?php endforeach; ?>
-          </select>
+    <label>Nombre*</label>
+    <input name="nombre" id="nombre" required>
 
-          <label>Categoría</label>
-          <select name="id_categoria" id="id_categoria">
-            <option value="0">—</option>
-            <?php foreach($categorias as $cc): ?>
-              <option value="<?=$cc['id_categoria']?>"><?=h($cc['nombre'])?></option>
-            <?php endforeach; ?>
-          </select>
+<label>Marca*</label>
+<select name="id_marca" id="id_marca" required onchange="mostrarCampoNuevaMarca()">
+  <option value="">— Selecciona una marca —</option>
+  <?php foreach($marcas as $mm): ?>
+    <option value="<?=$mm['id_marca']?>" data-nombre="<?=strtoupper(substr($mm['nombre'],0,3))?>">
+      <?=h($mm['nombre'])?>
+    </option>
+  <?php endforeach; ?>
+  <option value="nueva">Agregar nueva marca</option>
+</select>
+<script>
+function mostrarCampoNuevaMarca() {
+  const sel = document.getElementById('id_marca');
+  const campo = document.getElementById('campoNuevaMarca');
+  campo.style.display = (sel.value === 'nueva') ? 'block' : 'none';
+}
+</script>
 
-          <label>Dispositivo (modelo)</label>
-          <select name="id_dispositivo" id="id_dispositivo">
-            <option value="0">—</option>
-            <?php foreach($dispositivos as $dd): ?>
-              <option value="<?=$dd['id_dispositivo']?>"><?=h($dd['modelo'])?></option>
-            <?php endforeach; ?>
-          </select>
+<div id="campoNuevaMarca" style="display:none;margin-top:5px;">
+  <input type="text" name="nueva_marca" id="nueva_marca" placeholder="Escribe el nombre de la nueva marca">
+</div>
 
-          <label>Precio</label>
-          <input type="number" step="0.01" name="precio" id="precio">
+<label>Modelo (dispositivo)*</label>
+<input type="text" name="nuevo_modelo" id="nuevo_modelo" placeholder="Escribe el modelo (ej. Galaxy A55)" required>
 
-          <label>Costo</label>
-          <input type="number" step="0.01" name="costo" id="costo">
 
-          <label>Gasto</label>
-          <input type="number" step="0.01" name="gasto" id="gasto">
+    <label>Categoría*</label>
+    <select name="id_categoria" id="id_categoria" required>
+      <option value="">— Selecciona una categoría —</option>
+      <?php foreach($categorias as $cc): ?>
+        <option value="<?=$cc['id_categoria']?>" data-nombre="<?=strtoupper(substr($cc['nombre'],0,3))?>">
+          <?=h($cc['nombre'])?>
+        </option>
+      <?php endforeach; ?>
+    </select>
 
-          <label>Imagen (opcional)</label>
-          <input type="file" name="imagen" accept=".jpg,.jpeg,.png,.webp">
+    <label>Precio*</label>
+    <input type="number" step="0.01" name="precio" id="precio" required min="0.01">
 
-          <div style="margin-top:10px;display:flex;gap:8px">
-            <button class="btn" type="submit">Guardar</button>
-            <button class="btn" type="button" style="background:#ccc;color:#000" onclick="toggleCerrar()">Cancelar</button>
-          </div>
-        </form>
-      </div>
+    <label>Costo*</label>
+    <input type="number" step="0.01" name="costo" id="costo" required min="0.01">
+
+    <label>Gasto*</label>
+    <input type="number" step="0.01" name="gasto" id="gasto" required min="0.01">
+
+    <label>Imagen (opcional)</label>
+    <input type="file" name="imagen" accept=".jpg,.jpeg,.png,.webp">
+
+    <div style="margin-top:10px;display:flex;gap:8px">
+      <button class="btn" type="submit">Guardar</button>
+      <button class="btn" type="button" style="background:#ccc;color:#000" onclick="toggleCerrar()">Cancelar</button>
+    </div>
+  </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const catSelect = document.getElementById('id_categoria');
+  const marcaSelect = document.getElementById('id_marca');
+  const skuInput = document.getElementById('sku');
+
+  function generarPreviewSKU() {
+    const cat = catSelect.selectedOptions[0]?.dataset.nombre || '';
+    const marca = marcaSelect.selectedOptions[0]?.dataset.nombre || '';
+    if (cat && marca) {
+      skuInput.value = `${cat}-${marca}-XXX`; // “XXX” porque el ID real se generará al guardar
+    } else {
+      skuInput.value = '';
+    }
+  }
+
+  catSelect.addEventListener('change', generarPreviewSKU);
+  marcaSelect.addEventListener('change', generarPreviewSKU);
+});
+</script>
+
+
 
       <!-- Lista de productos -->
       <div id="contenido-productos">
@@ -323,51 +410,58 @@ $productosListado = $st->fetchAll();
   </div>
 
 <script>
-  // Mantener la sección visible (esta página solo muestra productos)
-  function showSection(){}
+// Mantener la sección visible (esta página solo muestra productos)
+function showSection(){}
 
-  // Form Crear/Editar
+// ==== Form Crear / Editar ====
 function toggleCerrar() {
   const f = document.getElementById('formProducto');
   if (f.style.display === 'block') {
-    // Si ya está abierto → solo ocultar
+    // Ocultar si está abierto
     f.style.display = 'none';
-    return;
-  }}
+  }
+}
 
-  function toggleFormCrear(){
-    const f = document.getElementById('formProducto');
-    resetFormProducto();
-    f.style.display = (f.style.display==='block' ? 'none' : 'block');
+function toggleFormCrear() {
+  const f = document.getElementById('formProducto');
+  resetFormProducto();
+  f.style.display = (f.style.display === 'block' ? 'none' : 'block');
+  if (f.style.display === 'block') {
+    f.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
-  function resetFormProducto(){
-    const f = document.getElementById('formProducto');
-    document.getElementById('formTitulo').textContent = 'Agregar nuevo producto';
-    document.getElementById('formAction').value = 'create_product';
-    document.getElementById('id_producto').value = '';
-    ['sku','nombre','precio','costo','gasto'].forEach(id=>{
-      const el=document.getElementById(id); if(el) el.value='';
-    });
-    ['id_marca','id_categoria','id_dispositivo'].forEach(id=>{
-      const el=document.getElementById(id); if(el) el.value='0';
-    });
+}
+
+function resetFormProducto() {
+  document.getElementById('formTitulo').textContent = 'Agregar nuevo producto';
+  document.getElementById('formAction').value = 'create_product';
+  const campos = ['sku','nombre','precio','costo','gasto'];
+  for (const id of campos) {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
   }
-  function editarProducto(id, sku, nombre, id_marca, id_categoria, id_dispositivo, precio, costo, gasto){
-    const f = document.getElementById('formProducto');
-    document.getElementById('formTitulo').textContent = 'Editar producto';
-    document.getElementById('formAction').value = 'update_product';
-    document.getElementById('id_producto').value = id;
-    document.getElementById('sku').value = sku || '';
-    document.getElementById('nombre').value = nombre || '';
-    document.getElementById('id_marca').value = id_marca || 0;
-    document.getElementById('id_categoria').value = id_categoria || 0;
-    document.getElementById('id_dispositivo').value = id_dispositivo || 0;
-    document.getElementById('precio').value = (precio ?? '') === 0 ? '' : precio;
-    document.getElementById('costo').value  = (costo  ?? '') === 0 ? '' : costo;
-    document.getElementById('gasto').value  = (gasto  ?? '') === 0 ? '' : gasto;
-    f.style.display = 'block';
-    f.scrollIntoView({behavior:'smooth', block:'center'});
-  }
+  ['id_marca','id_categoria','id_dispositivo'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.value='';
+  });
+}
+
+function editarProducto(id, sku, nombre, id_marca, id_categoria, id_dispositivo, precio, costo, gasto){
+  const f = document.getElementById('formProducto');
+  document.getElementById('formTitulo').textContent = 'Editar producto';
+  document.getElementById('formAction').value = 'update_product';
+  document.getElementById('id_producto').value = id;
+  document.getElementById('sku').value = sku || '';
+  document.getElementById('nombre').value = nombre || '';
+  document.getElementById('id_marca').value = id_marca || '';
+  document.getElementById('id_categoria').value = id_categoria || '';
+  document.getElementById('id_dispositivo').value = id_dispositivo || '';
+  document.getElementById('precio').value = precio || '';
+  document.getElementById('costo').value  = costo  || '';
+  document.getElementById('gasto').value  = gasto  || '';
+  f.style.display = 'block';
+  f.scrollIntoView({behavior:'smooth', block:'center'});
+}
 </script>
+
 </body>
 </html>
