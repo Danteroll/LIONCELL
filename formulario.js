@@ -107,14 +107,15 @@ document.addEventListener('DOMContentLoaded', () => {
           if (f.validity.valueMissing) msg = "Este campo es obligatorio.";
           else if (f.validity.tooShort) msg = "Debe tener al menos 1 carácter.";
           else if (f.validity.tooLong) msg = "Máximo 30 caracteres.";
-          else if (f.validity.patternMismatch) msg = "Solo letras (incluye acentos), sin espacios ni números.";
+          else if (f.validity.patternMismatch) msg = "Solo letras (incluye acentos) y espacios, sin números ni símbolos.";
           break;
-          
+                  
         case 'apm':
           if (f.validity.tooShort) msg = "Debe tener al menos 1 carácter.";
           else if (f.validity.tooLong) msg = "Máximo 30 caracteres.";
-          else if (f.validity.patternMismatch) msg = "Solo letras (incluye acentos), sin espacios ni números.";
+          else if (f.validity.patternMismatch) msg = "Solo letras (incluye acentos) y espacios, sin números ni símbolos.";
           break;
+
 
         // Login y registro
         case 'correo':

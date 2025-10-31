@@ -1,12 +1,12 @@
 <?php
-require_once __DIR__ . '/../inc/init.php'; // tu conexión PDO
+require_once __DIR__ . '/../inc/init.php'; // conexión PDO
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         $nombre = trim($_POST['nombre_cliente'] ?? '');
         $correo = trim($_POST['correo'] ?? '');
         $telefono = trim($_POST['telefono'] ?? '');
-        $productos = $_POST['productos'] ?? []; // array de [id_producto => cantidad]
+        $productos = $_POST['productos'] ?? []; 
 
         if ($nombre === '' || empty($productos)) {
             throw new Exception('Debe indicar nombre y al menos un producto.');
@@ -14,7 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $pdo->beginTransaction();
 
-        // 1️⃣ Crear pedido
+        // Crear pedido
         $pdo->prepare("INSERT INTO pedidos (nombre_cliente, telefono, correo, total, estado)
                        VALUES (?, ?, ?, 0, 'reservado')")
             ->execute([$nombre, $telefono, $correo]);
@@ -22,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $idPedido = $pdo->lastInsertId();
         $total = 0;
 
-        // 2️⃣ Insertar productos del pedido
+        // Insertar productos del pedido
         $stmtProd = $pdo->prepare("SELECT id_producto, precio FROM productos WHERE id_producto = ?");
         $stmtItem = $pdo->prepare("INSERT INTO pedido_items (id_pedido, id_producto, cantidad, precio_unit)
                                    VALUES (?, ?, ?, ?)");
@@ -41,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmtItem->execute([$idPedido, $idProducto, $cantidad, $precio]);
         }
 
-        // 3️⃣ Actualizar total del pedido
+        // Actualizar total del pedido
         $pdo->prepare("UPDATE pedidos SET total = ? WHERE id_pedido = ?")->execute([$total, $idPedido]);
 
         $pdo->commit();

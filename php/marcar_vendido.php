@@ -11,14 +11,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         $pdo->beginTransaction();
 
-        // 1️⃣ Obtener productos del pedido
+        // Obtener productos del pedido
         $stmt = $pdo->prepare("SELECT id_producto, cantidad, precio_unit FROM pedido_items WHERE id_pedido = ?");
         $stmt->execute([$idPedido]);
         $items = $stmt->fetchAll();
 
         if (!$items) throw new Exception('El pedido no tiene productos.');
 
-        // 2️⃣ Calcular total y costo
+        // Calcular total y costo
         $total = 0;
         $costoTotal = 0;
         $stmtCosto = $pdo->prepare("SELECT costo FROM productos WHERE id_producto = ?");
@@ -29,25 +29,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $c = $stmtCosto->fetchColumn() ?: 0;
             $costoTotal += $c * $it['cantidad'];
 
-            // 3️⃣ Restar del inventario
+            // Restar del inventario
             $pdo->prepare("UPDATE inventario SET stock_actual = GREATEST(stock_actual - ?, 0)
                            WHERE id_producto = ?")
                 ->execute([$it['cantidad'], $it['id_producto']]);
         }
 
-        // 4️⃣ Crear venta
+        // Crear venta
         $pdo->prepare("INSERT INTO ventas (id_pedido, total, costo_total) VALUES (?, ?, ?)")
             ->execute([$idPedido, $total, $costoTotal]);
         $idVenta = $pdo->lastInsertId();
 
-        // 5️⃣ Pasar productos a venta_items
+        // Pasar productos a venta_items
         $stmtInsert = $pdo->prepare("INSERT INTO venta_items (id_venta, id_producto, cantidad, precio_unit)
                                      VALUES (?, ?, ?, ?)");
         foreach ($items as $it) {
             $stmtInsert->execute([$idVenta, $it['id_producto'], $it['cantidad'], $it['precio_unit']]);
         }
 
-        // 6️⃣ Marcar pedido como vendido
+        //Marcar pedido como vendido
         $pdo->prepare("UPDATE pedidos SET estado='vendido' WHERE id_pedido=?")->execute([$idPedido]);
 
         $pdo->commit();

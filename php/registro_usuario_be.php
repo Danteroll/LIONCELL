@@ -1,6 +1,7 @@
 <?php
 require_once 'conexion_be.php';
 require_once 'validacion.php';
+$conexion->set_charset('utf8mb4');
 
 // Captura segura
 $nombre    = trim($_POST['nombre'] ?? '');

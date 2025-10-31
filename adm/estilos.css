@@ -1,30 +1,74 @@
 * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
-  body { display: flex; height: 100vh; background: #f4f6f8; }
 
-  /* Sidebar con tu gradiente original */
-  .sidebar {
-    width: 250px;
-    background: linear-gradient(180deg, #1e3a8a 0%, #2563eb 45%, #e6c065 100%);
-    color: white;
-    display: flex; flex-direction: column; padding: 20px;
-  }
-  .sidebar h2 { text-align: center; margin-bottom: 30px; }
-  .menu a {
-    display: block; padding: 12px; color: white; text-decoration: none;
-    border-radius: 8px; transition: background 0.3s;
-  }
-  .menu a:hover, .menu a.active { background: rgba(255,255,255,0.2); }
+body {
+  height: 100vh;
+  background: #f4f6f8;
+  overflow-x: hidden; /* evita scroll lateral */
+}
+/* Contenedor principal */
+.layout {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+}
 
-  /* Contenido principal */
-  .main-content { flex: 1; display: flex; flex-direction: column; }
-  .topbar {
-    background: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    padding: 15px 25px; display: flex; justify-content: space-between; align-items: center;
-  }
-  .topbar h3 { color: #333; }
 
-  section { flex: 1; padding: 25px; display: none; overflow-y: auto; }
-  section.active { display: block; }
+  /* Sidebar fija */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 240px;      
+  height: 100vh;         
+  background: #1e3a8a;    
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 20px;
+  box-sizing: border-box;
+  overflow-y: auto;       
+  z-index: 100;
+}
+
+/* Links de menú */
+.sidebar .menu a {
+  display: block;
+  color: #fff;
+  text-decoration: none;
+  padding: 8px 0;
+  width: 100%;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+.sidebar .menu a:hover,
+.sidebar .menu a.active {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+}
+
+/* Ajusta el área principal para dejar espacio lateral */
+.main-content {
+  margin-left: 260px;     
+  padding: 20px;
+  box-sizing: border-box;
+  min-height: 100vh;
+  background: #f9fafb;
+}
+
+/* Asegura que la barra superior quede fija dentro del área principal */
+.topbar {
+  position: sticky;
+  top: 0;
+  background: #fff;
+  z-index: 50;
+  padding: 10px 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+
+
+
   h1 { color: #0066ff; margin-bottom: 15px; }
 
   /* Botones */
@@ -68,13 +112,13 @@
 .inventario-table{
   width: 100%;
   border-collapse: collapse;
-  table-layout: fixed;         /* columnas más predecibles */
-  font-size: 14px;             /* ↓ tamaño de fuente */
+  table-layout: fixed;        
+  font-size: 14px;           
 }
 
 .inventario-table th,
 .inventario-table td{
-  padding: 6px 8px;            /* ↓ padding */
+  padding: 6px 8px;            
   vertical-align: middle;
   border-bottom: 1px solid #eef1f6;
 }
@@ -132,7 +176,6 @@
   font-size: 13px;
 }
 
-/* Botones step (− / +) en compacto */
 .inventario-table .btn-step{
   width: 30px;
   background:#e8f0fe;
@@ -145,3 +188,40 @@
 }
 .inventario-table .btn-step:hover{ background:#d9e6fd; }
 .inventario-table .btn-guardar:hover{ background:#155cc1; }
+
+/* === FIX: alineación vertical y márgenes colapsados === */
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 240px;
+  height: 100vh;
+  background: linear-gradient(180deg, #1e3a8a 0%, #2563eb 40%, #fbbf24 100%);
+  color: #fff;
+  padding: 20px;
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+
+.main-content {
+  margin-left: 240px; 
+  padding: 20px;
+  background: #f9fafb;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+.topbar h3 {
+  margin: 0;
+}

@@ -82,7 +82,7 @@
                     title="Solo letras (incluye acentos). Puedes usar espacios simples entre nombres. Sin números ni símbolos."
                     >
 
-                    <!-- Apellido Paterno: solo letras, SIN espacios -->
+                    <!-- Apellido Paterno: solo letras y espacios -->
                     <input
                     type="text"
                     placeholder="Apellido Paterno *"
@@ -90,12 +90,12 @@
                     id="app"
                     minlength="1"
                     maxlength="30"
-                    pattern="^[A-Za-zÁÉÍÓÚáéíóúÑñ]+$"
+                    pattern="^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$"
                     required
-                    title="Solo letras (incluye acentos), sin espacios."
+                    title="Solo letras (incluye acentos) y espacios."
                     >
 
-                    <!-- Apellido Materno: solo letras, SIN espacios -->
+                    <!-- Apellido Materno: solo letras y espacios -->
                     <input
                     type="text"
                     placeholder="Apellido Materno"
@@ -103,9 +103,10 @@
                     id="apm"
                     minlength="1"
                     maxlength="30"
-                    pattern="^[A-Za-zÁÉÍÓÚáéíóúÑñ]+$"
-                    title="Solo letras (incluye acentos), sin espacios."
+                    pattern="^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$"
+                    title="Solo letras (incluye acentos) y espacios."
                     >
+
 
                     <!-- Correo: type=email + patrón ASCII con TLD (2–24 letras) -->
                     <input

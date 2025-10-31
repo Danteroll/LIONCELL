@@ -1,5 +1,4 @@
 <?php
-// php/validacion.php
 
 function esUsuarioValido($s) {
   return preg_match('/^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9]{3,30}$/u', $s);
@@ -9,8 +8,8 @@ function esNombreValido($s) { // permite espacios simples, solo letras
   return preg_match('/^(?!.*\s{2,})[A-Za-zÁÉÍÓÚáéíóúÑñ]+(?:\s[A-Za-zÁÉÍÓÚáéíóúÑñ]+)*$/u', $s);
 }
 
-function esApellidoValido($s) { // sin espacios, solo letras
-  return preg_match('/^[A-Za-zÁÉÍÓÚáéíóúÑñ]+$/u', $s);
+function esApellidoValido($s) { // permite espacios, solo letras
+  return preg_match('/^(?!.*\s{2,})[A-Za-zÁÉÍÓÚáéíóúÑñ]+(?:\s[A-Za-zÁÉÍÓÚáéíóúÑñ]+)*$/u', $s);
 }
 
 function esCorreoASCIIValido($email) {

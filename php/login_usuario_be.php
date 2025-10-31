@@ -1,7 +1,8 @@
 <?php
 session_start();
 require_once 'conexion_be.php';
-require_once 'validacion.php'; // opcional, si tienes las funciones sugeridas
+require_once 'validacion.php'; 
+$conexion->set_charset('utf8mb4');
 
 // Captura y saneamiento
 $correo     = trim($_POST['correo'] ?? '');
@@ -11,7 +12,7 @@ $tipoPet    = strtolower(trim($_POST['tipo'] ?? 'usuario')); // 'usuario' o 'adm
 // Normaliza el tipo para evitar valores inesperados
 $tipoPet = ($tipoPet === 'administrador') ? 'administrador' : 'usuario';
 
-// Validaciones mínimas en backend (opcional si ya usas validacion.php)
+// Validaciones mínimas en backend
 if (empty($correo) || empty($contrasena)) {
     echo '<script>alert("Completa correo y contraseña"); window.location="../formulario.php";</script>';
     exit();
@@ -38,7 +39,6 @@ if (!password_verify($contrasena, $user['contrasena'])) {
     exit();
 }
 
-// Ahora control de permisos según lo que el usuario eligió en el form (solo UX) y su role real (BD)
 
 // Si el usuario REAL no es admin (role_id != 1) pero seleccionó "administrador", bloquear inicio
 if ((int)$user['role_id'] !== 1 && $tipoPet === 'administrador') {
@@ -58,15 +58,14 @@ $_SESSION['correo']   = $user['correo'] ?? '';
 $_SESSION['telefono'] = $user['telefono'] ?? '';
 
 
-// Redirección final: siempre basarse en la DB para permisos.
-// UX: si admin real y eligió 'usuario', podemos redirigir a la home (modo 'usuario').
+// si admin real y eligió 'usuario', redirigir a home.
 if ($_SESSION['role_id'] === 1) {
     if ($tipoPet === 'usuario') {
         // administrador que decidió entrar como usuario -> lo llevamos a home de usuario
         header("Location: ../index.php");
     } else {
         // administrador que quiere su panel
-        header("Location: ../VistaAdm.php"); // renombra a .php si usas auth_admin
+        header("Location: ../VistaAdm.php"); 
     }
 } else {
     // usuario normal
