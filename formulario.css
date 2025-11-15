@@ -1,0 +1,276 @@
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    text-decoration: none;
+    font-family: 'Quicksand', sans-serif;
+}
+
+/* ===== FONDO IGUAL AL DE LION CELL ===== */
+body {
+    background: linear-gradient(90deg, #1e3a8a 0%, #2563eb 45%, #e6c065 100%);
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-position: center;
+}
+
+/* ===== ESTRUCTURA ORIGINAL ===== */
+main {
+    width: 100%;
+    padding: 20px;
+    margin: auto;
+    margin-top: 100px;
+}
+
+.contenedor__todo {
+    width: 100%;
+    max-width: 800px;
+    margin: auto;
+    position: relative;
+}
+
+/* ===== CAJA TRASERA ===== */
+.caja__trasera {
+    width: 100%;
+    padding: 10px 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(10px);
+    background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 80%);
+    border-radius: 20px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    z-index: 1; /* evita bloquear los inputs */
+}
+
+.caja__trasera div {
+    margin: 100px 40px;
+    color: #fff;
+    transition: all 0.5s;
+    text-align: center;
+}
+
+.caja__trasera div h3 {
+    font-weight: 700;
+    font-size: 26px;
+}
+
+.caja__trasera div p {
+    font-size: 16px;
+    font-weight: 400;
+    margin-top: 10px;
+}
+
+.caja__trasera button {
+    padding: 10px 40px;
+    border: 2px solid #fff;
+    font-size: 15px;
+    background: transparent;
+    font-weight: 600;
+    cursor: pointer;
+    color: #fff;
+    border-radius: 30px;
+    outline: none;
+    transition: all 300ms;
+}
+
+.caja__trasera button:hover {
+    background: #fff;
+    color: #2563eb;
+}
+
+/* ===== FORMULARIOS ===== */
+.contenedor__login-register {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    max-width: 380px;
+    position: relative;
+    top: -185px;
+    left: 10px;
+    z-index: 2; /* asegura prioridad sobre la caja azul */
+    transition: left 500ms cubic-bezier(0.175, 0.885, 0.320, 1.275);
+    pointer-events: all; /* permite interacción */
+}
+
+.contenedor__login-register form {
+    width: 100%;
+    padding: 80px 30px;
+    background: #ffffff;
+    position: absolute;
+    border-radius: 20px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+.contenedor__login-register form h2 {
+    font-size: 28px;
+    text-align: center;
+    margin-bottom: 1px;
+    color: #1e3a8a; /* azul Lion Cell */
+    font-weight: 800;
+}
+
+/* ===== INPUTS ===== */
+.contenedor__login-register form input {
+    width: 100%;
+    margin-top: 20px;
+    padding: 12px 15px;
+    border: none;
+    background: #dff3e8; /* verde menta suave */
+    font-size: 16px;
+    border-radius: 10px;
+    outline: none;
+    transition: 0.2s ease;
+}
+
+.contenedor__login-register form input:focus {
+    background: #eef9f3;
+    border: 1.5px solid #2563eb;
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
+}
+
+/* ===== ENLACE OLVIDASTE CONTRASEÑA ===== */
+.contenedor__login-register form a {
+    display: block;
+    margin-top: 10px;
+    text-align: left;
+    color: #1e3a8a;
+    font-weight: 600;
+}
+
+/* ===== BOTÓN PRINCIPAL ===== */
+.contenedor__login-register form button {
+    padding: 14px 0;
+    width: 100%;
+    margin-top: 40px;
+    border: none;
+    font-size: 16px;
+    background: linear-gradient(90deg, #f0b818 0%, #ffd44d 100%);
+    font-weight: 700;
+    border-radius: 30px;
+    cursor: pointer;
+    color: #0d2a6b;
+    outline: none;
+    box-shadow: 0 6px 20px rgba(240, 184, 24, 0.25);
+    transition: all 200ms ease;
+}
+
+.contenedor__login-register form button:hover {
+    filter: brightness(1.08);
+}
+
+/* ===== FORMULARIOS VISIBLES ===== */
+.formulario__login {
+    opacity: 1;
+    display: block;
+}
+
+.formulario__register {
+    display: none;
+}
+
+/* ===== RESPONSIVO ===== */
+@media screen and (max-width: 850px) {
+    main {
+        margin-top: 50px;
+    }
+
+    .caja__trasera {
+        max-width: 350px;
+        height: 300px;
+        flex-direction: column;
+        margin: auto;
+    }
+
+    .caja__trasera div {
+        margin: 0px;
+        position: absolute;
+    }
+
+    .contenedor__login-register {
+        top: -10px;
+        left: -5px;
+        margin: auto;
+    }
+
+    .contenedor__login-register form {
+        position: relative;
+    }
+}
+
+/* ===== SELECT con etiqueta (Tipo:) ===== */
+.campo-select {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #dff3e8; /* igual que los inputs */
+    border-radius: 10px;
+    padding: 10px 15px;
+    margin-top: 20px;
+}
+
+.campo-select label {
+    font-weight: 600;
+    font-size: 16px;
+    color: #0d2a6b; /* azul del texto */
+    margin-right: 10px;
+}
+
+.campo-select select {
+    flex: 1;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 16px;
+    color: #000;
+    cursor: pointer;
+    appearance: none; /* oculta el estilo nativo */
+}
+
+/* Flecha del select */
+.campo-select select::-ms-expand {
+    display: none;
+}
+.region-select {
+  background-color: #e8f6f0;       /* verde claro */
+  border: none;
+  border-radius: 12px;
+  padding: 12px;
+  font-size: 14px;
+  color: #333;
+  flex: 0 0 45%;                  /* ocupa 45% del ancho */
+  box-shadow: inset 0 0 4px rgba(0,0,0,0.05);
+  transition: all 0.2s ease-in-out;
+  outline: none;
+  cursor: pointer;
+  margin-top: 20px;
+}
+
+.region-select:hover {
+  background-color: #d9f0e5;
+}
+
+.region-select:focus {
+  box-shadow: 0 0 0 2px #2563eb66; /* azul translúcido */
+}
+
+.telefono-input {
+  background-color: #e8f6f0;
+  border: none;
+  border-radius: 12px;
+  padding: 12px;
+  font-size: 14px;
+  flex: 1;
+  color: #333;
+  box-shadow: inset 0 0 4px rgba(0,0,0,0.05);
+  transition: all 0.2s ease-in-out;
+}
+
+.telefono-input:focus {
+  box-shadow: 0 0 0 2px #2563eb66;
+  outline: none;
+}
