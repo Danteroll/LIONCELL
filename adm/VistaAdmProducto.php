@@ -60,7 +60,6 @@ function obtenerNombre(PDO $pdo, string $tabla, string $pkCol, int $id): string 
 
 
 try {
-<<<<<<< HEAD
     if ($action === 'create_product') {
     $nombre = trim($_POST['nombre'] ?? '');
     $id_m   = $_POST['id_marca'] ?? '';
@@ -129,7 +128,6 @@ try {
 }
 
 
-
     if ($action === 'update_product') {
         $id     = (int)($_POST['id_producto'] ?? 0);
         $sku    = trim($_POST['sku'] ?? '');
@@ -146,30 +144,6 @@ try {
         $accId = $pdo->query("SELECT id_categoria FROM categorias WHERE LOWER(nombre)='accesorios' LIMIT 1")->fetchColumn();
         if ($accId && (int)$id_c === (int)$accId) {
             $id_d = null;
-=======
-   if ($action === 'create_product') {
-    $nombre = trim($_POST['nombre'] ?? '');
-    $id_m_raw = $_POST['id_marca'] ?? '';
-    $id_m = (int)$id_m_raw;
-    $id_c = (int)($_POST['id_categoria'] ?? 0);
-    $modelo = trim($_POST['modelo'] ?? '');
-
-    $precio = (float)($_POST['precio'] ?? 0);
-    $costo  = (float)($_POST['costo'] ?? 0);
-    $gasto  = (float)($_POST['gasto'] ?? 0);
-
-    if ($nombre === '') throw new RuntimeException('El nombre del producto es obligatorio.');
-    if ($modelo === '') throw new RuntimeException('El modelo es obligatorio.');
-    if ($precio <= 0 || $costo <= 0 || $gasto < 0) {
-        throw new RuntimeException('Precio, costo y gasto deben ser valores positivos.');
-    }
-
-    // Si el usuario seleccionó "Agregar nueva marca"
-    if ($id_m_raw === 'nueva') {
-        $nombreNuevaMarca = trim($_POST['nueva_marca'] ?? '');
-        if ($nombreNuevaMarca === '') {
-            throw new RuntimeException('Debes escribir el nombre de la nueva marca.');
->>>>>>> 489ac31f1b611af6d09df3a94ff50ba7b156a7b1
         }
         $stmt = $pdo->prepare("INSERT INTO marcas (nombre) VALUES (?)");
         $stmt->execute([$nombreNuevaMarca]);
@@ -279,13 +253,18 @@ try {
 }
 
     // ==================   ELIMINAR PRODUCTO   ====================
+   try {
     if ($action === 'delete_product') {
         $id = (int)($_POST['id_producto'] ?? 0);
-        if ($id <= 0) throw new RuntimeException('ID inválido.');
+
+        if ($id <= 0) {
+            throw new RuntimeException('ID inválido.');
+        }
+
         $pdo->prepare("DELETE FROM productos WHERE id_producto=?")->execute([$id]);
+
         $msg = '🗑️ Producto eliminado.';
     }
-
 } catch (Throwable $e) {
     $err = $e->getMessage();
 }
@@ -367,7 +346,6 @@ $productosListado = $st->fetchAll();
         <div style="background:#fff5f5;border:1px solid #fecaca;color:#991b1b;padding:10px;margin-bottom:12px;">Error: <?=h($err)?></div>
       <?php endif; ?>
 
-<<<<<<< HEAD
 <!-- Form Crear/Editar -->
 <div id="formProducto" class="form-agregar" style="display:none">
   <form method="post" enctype="multipart/form-data" action="VistaAdmProducto.php#productos">
@@ -498,16 +476,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 </form>
               </div>
             </div>
-=======
- <!-- Filtros -->
-    <div class="prod-sidebar">
-      <form method="get" action="VistaAdmProducto.php#productos" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-        <input type="text" name="q" placeholder="Buscar por nombre o SKU..." value="<?=h($q)?>" style="flex:1;padding:8px;border-radius:5px;border:1px solid #ccc" />
-        <select name="marca">
-          <option value="0">Todas las marcas</option>
-          <?php foreach($marcas as $mm): ?>
-            <option value="<?=$mm['id_marca']?>" <?=$m===$mm['id_marca']?'selected':''?>><?=h($mm['nombre'])?></option>
->>>>>>> 489ac31f1b611af6d09df3a94ff50ba7b156a7b1
           <?php endforeach; ?>
         </select>
         <select name="cat">
@@ -772,7 +740,6 @@ function toggleNuevaMarca(){
 </script>
   </div>
 
-<<<<<<< HEAD
 <script>
 // Mantener la sección visible (esta página solo muestra productos)
 function showSection(){}
@@ -827,8 +794,6 @@ function editarProducto(id, sku, nombre, id_marca, id_categoria, id_dispositivo,
 }
 </script>
 
-=======
->>>>>>> 489ac31f1b611af6d09df3a94ff50ba7b156a7b1
 </body>
 
 </html>
